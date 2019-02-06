@@ -12,9 +12,9 @@ public class Board
 		public byte Column;
 		public sbyte Value;
 		
-		public static Move operator <(Move rValue){
-			return ((Row < rValue.Row) ||
-					(Column < rValue.Column));
+		public static bool operator <(Move lValue, Move rValue){
+			return ((lValue.Row < rValue.Row) ||
+				(lValue.Column < rValue.Column));
 		}
 	}
 	
@@ -36,7 +36,7 @@ public class Board
 	public Move ConvertStringToMove(string moveSent) {
 		Move move;
 		
-		move.Row = Int32.Parse(moveSent[1]);
+		move.Row = 10 - Int32.Parse(moveSent[1]);
 		move.Column = (byte)moveSent[0] - 140;
 		
 		if(moveSent.Length == 2) {
