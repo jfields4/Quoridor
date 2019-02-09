@@ -95,7 +95,45 @@ public class Board
 		
 		return valid;
 	}
-	
+
+    public bool ValidateMove(Move moveSent) {
+        bool valid = false;
+        Move move;
+
+        if (moveSent < PlayerPositions[Current])
+        {
+            move = moveSent;
+        }
+        else
+        {
+            move = PlayerPositions[Current];
+        }
+
+        if (Adjacent(moveSent, PlayerPositions[Current]))
+        {
+            //if moving up or down
+            if (moveSent.Row != PlayerPositions[Current].Row)
+            {
+                if (GameBoard[move.Row][move.Column - 1] <= 0 &&
+                    GameBoard[move.Row][move.Column] <= 0)
+                {
+                    valid = true;
+                }
+            }
+            //if moving left or right
+            else
+            {
+                if (GameBoard[move.Row - 1][move.Column] >= 0 &&
+                    GameBoard[move.Row][move.Column] >= 0)
+                {
+                    valid = true;
+                }
+            }
+        }
+
+        return valid;
+    }
+
 	public void MakeMove(string moveSent) {
 		Move move = ConvertStringToMove(moveSent);
 		
