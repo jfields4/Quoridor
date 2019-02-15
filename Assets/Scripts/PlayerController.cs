@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using gamecore = GameCore;
+using gameboard = Board;
 
 public class PlayerController : MonoBehaviour
 {
 
-
+    gamecore core = new gamecore(true);
     public GameObject player1;                      // Reference to Player1 gameobject
     public GameObject player2;                      // Reference to player2 gameobject
     public float speed;                             // The speed with which the player will move to other blocks
@@ -61,9 +63,20 @@ public class PlayerController : MonoBehaviour
                     if(allowableIndices.Contains(hitBlockIndexPos))
                     {
                         previousPlayerPos = currentlySelectedPlayer.transform.position;
-                        //currentlySelectedPlayer.transform.position = new Vector3(blockHit.position.x , currentlySelectedPlayer.transform.position.y, blockHit.position.z);
-                        lerpTo = new Vector3(blockHit.position.x, currentlySelectedPlayer.transform.position.y, blockHit.position.z);
-                        moveNow = true;
+                        byte row = (byte)(hitBlockIndexPos / 9 + 1);
+                        byte col = (byte)(hitBlockIndexPos % 9);
+
+                        Debug.Log("Row = " + row + " Col = " + col);
+                        gameboard.Move move = new gameboard.Move(row, col, 0);
+                        Debug.Log("Row = " + move.Row + " Col = " + move.Column);
+                        if (core.ProcessMove(move))
+                        {
+
+                            //currentlySelectedPlayer.transform.position = new Vector3(blockHit.position.x , currentlySelectedPlayer.transform.position.y, blockHit.position.z);
+                            lerpTo = new Vector3(blockHit.position.x, currentlySelectedPlayer.transform.position.y, blockHit.position.z);
+
+                            moveNow = true;
+                        }
                     }
 
                 }

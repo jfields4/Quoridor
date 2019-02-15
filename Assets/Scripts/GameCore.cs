@@ -3,13 +3,14 @@ using System;
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
+using gameBoard = Board;
 
 public class GameCore : MonoBehaviour
 {
-    Board board;
+    gameBoard board = new gameBoard();
 
     bool AIGame;
-    Board::Move LastMove;
+    gameBoard.Move LastMove;
 
     public GameCore(bool AIOption)
     {
@@ -17,50 +18,51 @@ public class GameCore : MonoBehaviour
         //will need to initialize modules
     }
 
-    public bool ValidateMove(string move)
+    public bool ValidateMove(gameBoard.Move move)
     {
         return board.ValidateMove(move);
     }
 
-    public bool ProcessMove(string move)
+    public bool ProcessMove(gameBoard.Move move)
     {
         bool result = false;
 
-        LastMove = Board.ConvertStringToMove(move);
+        LastMove = move;
 
-        if (board.MakeMove(move))
+        if (move != null)
         {
-            result = true;
-        }
-        else
-        {
-            if (!AIGame)
+            if (ValidateMove(move))
             {
-                network.SendMove(move);
-            }
-
-            string newMove = GetNewMove();
-
-            if (Board.MakeMove(newMove))
-            {
+                board.MakeMove(move);
                 result = true;
+
+                if (!AIGame)
+                {
+                    //network.SendMove(move);
+                }
+
+                gameBoard.Move newMove = GetOpponentMove();
+
+                board.MakeMove(newMove);
             }
         }
 
         return result;
     }
 
-    private string GetNewMove()
+    private gameBoard.Move GetOpponentMove()
     {
-        Board::Move move;
+        gameBoard.Move move = new gameBoard.Move(0,0,0);
 
         if (AIGame)
         {
-            getAIMove(LastMove);
+            //getAIMove(LastMove);
         }
         else
         {
-            network.GetMove();
+            //network.GetMove();
         }
+
+        return move;
     }
 }
