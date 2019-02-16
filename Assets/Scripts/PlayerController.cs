@@ -16,8 +16,7 @@ public class PlayerController : MonoBehaviour
 
     internal bool moveNow;                          // Flag indicates whether the player should move now or not
     internal GameObject currentlySelectedPlayer;    // The player that is currently selected
-
-
+    
     private bool isPlayer1Selected;                 // Shows which player is selected corrently
     private Vector3 lerpTo;                         // The interpolation end point
     private bool allowToggle = true;                // Flag indicates whether to allow switching between players
@@ -57,28 +56,28 @@ public class PlayerController : MonoBehaviour
                     int hitBlockIndexPos = BoardSetup.instance.gridArray.IndexOf(blockHit.name) + 1;
                     
 
-                    Debug.Log("Hit block index is  " + hitBlockIndexPos + "  name is  "+ blockHit.name + "  currently selected player is   "+ currentlySelectedPlayer.name);               
+                    //Debug.Log("Index: " + hitBlockIndexPos + " is "+ blockHit.position.x + " " + currentlySelectedPlayer.transform.position.y + " " + blockHit.position.z);               
                     List<int> allowableIndices= GetAllowableIndices(playerIndexPo);
+                    
+                    previousPlayerPos = currentlySelectedPlayer.transform.position;
+                    byte row = (byte)(hitBlockIndexPos / 9 + 1);
+                    byte col = (byte)(hitBlockIndexPos % 9);
 
-                    if(allowableIndices.Contains(hitBlockIndexPos))
+                    if (allowableIndices.Contains(hitBlockIndexPos))
                     {
-                        previousPlayerPos = currentlySelectedPlayer.transform.position;
-                        byte row = (byte)(hitBlockIndexPos / 9 + 1);
-                        byte col = (byte)(hitBlockIndexPos % 9);
-
-                        Debug.Log("Row = " + row + " Col = " + col);
                         gameboard.Move move = new gameboard.Move(row, col, 0);
-                        Debug.Log("Row = " + move.Row + " Col = " + move.Column);
                         if (core.ProcessMove(move))
                         {
-
                             //currentlySelectedPlayer.transform.position = new Vector3(blockHit.position.x , currentlySelectedPlayer.transform.position.y, blockHit.position.z);
                             lerpTo = new Vector3(blockHit.position.x, currentlySelectedPlayer.transform.position.y, blockHit.position.z);
 
                             moveNow = true;
+                            if (core.CheckForVictory())
+                            {
+                                Debug.Log("Game Over");
+                            }
                         }
                     }
-
                 }
 
                 // wall was clicked
@@ -125,18 +124,18 @@ public class PlayerController : MonoBehaviour
         List<int> allowables = new List<int>();
 
         // lies in the left most column on the grid
-        if(((index - 1) % 9) == 0)
+        if (((index - 1) % 9) == 0)
         {
 
             // top left block
-            if(index == 1)
+            if (index == 1)
             {
                 allowables.Add(index + 1);
                 allowables.Add(index + 9);
             }
 
             //bottom left block
-            else if(index == 82)
+            else if (index == 82)
             {
                 allowables.Add(index + 1);
                 allowables.Add(index - 9);
@@ -201,7 +200,7 @@ public class PlayerController : MonoBehaviour
             else
             {
                 allowables.Add(index + 1);
-                allowables.Add(index - 1);       
+                allowables.Add(index - 1);
                 allowables.Add(index + 9);
             }
         }
@@ -246,7 +245,7 @@ public class PlayerController : MonoBehaviour
 
         string allows = "";
 
-        foreach(int allow in allowables)
+        foreach (int allow in allowables)
         {
             allows += "  " + allow;
         }
@@ -268,7 +267,7 @@ public class PlayerController : MonoBehaviour
             //if (hitInfo.transform.gameObject.layer != LayerMasks.instance.blocksLayerNumber) { return -1; }
 
             int index = BoardSetup.instance.gridArray.IndexOf(hitInfo.transform.name) + 1;
-            Debug.Log("Hit for player position check " + hitInfo.transform.name + "  Index is is  " + index);
+            //Debug.Log("Hit for player position check " + hitInfo.transform.name + "  Index is is  " + index);
             return index;
         }
 

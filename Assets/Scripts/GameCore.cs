@@ -26,7 +26,7 @@ public class GameCore : MonoBehaviour
     public bool ProcessMove(gameBoard.Move move)
     {
         bool result = false;
-
+        
         LastMove = move;
 
         if (move != null)
@@ -35,19 +35,25 @@ public class GameCore : MonoBehaviour
             {
                 board.MakeMove(move);
                 result = true;
+                Debug.Log("Game core: " + result);
 
-                if (!AIGame)
-                {
-                    //network.SendMove(move);
-                }
+                //if (!AIGame)
+                //{
+                //    network.SendMove(move);
+                //}
 
-                gameBoard.Move newMove = GetOpponentMove();
+                //gameBoard.Move newMove = GetOpponentMove();
 
-                board.MakeMove(newMove);
+                //board.MakeMove(newMove);
             }
         }
 
         return result;
+    }
+
+    public bool CheckForVictory()
+    {
+        return board.CheckForEndGame();
     }
 
     private gameBoard.Move GetOpponentMove()

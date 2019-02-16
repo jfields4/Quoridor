@@ -154,8 +154,7 @@ public class Board
         bool valid = false;
             
         Move move = new Move(0,0,0);
-
-        Debug.Log("Move sent:\nRow: " + moveSent.Row + "\nColumn: " + moveSent.Column);
+        
         if (moveSent < PlayerPositions[Current])
         {
             move = moveSent;
@@ -220,6 +219,18 @@ public class Board
         }
 
         Current = (byte)Math.Abs(Current - 1);
+    }
+
+    public bool CheckForEndGame()
+    {
+        bool end = false;
+        if (PlayerPositions[0].Row == 9 ||
+            PlayerPositions[0].Row == 1)
+        {
+            end = true;
+        }
+
+        return end;
     }
 
     //private functions
