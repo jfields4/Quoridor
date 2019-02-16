@@ -28,14 +28,12 @@ public class GameCore : MonoBehaviour
         bool result = false;
         
         LastMove = move;
-
         if (move != null)
         {
             if (ValidateMove(move))
             {
                 board.MakeMove(move);
                 result = true;
-                Debug.Log("Game core: " + result);
 
                 //if (!AIGame)
                 //{

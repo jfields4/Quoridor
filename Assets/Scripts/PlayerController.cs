@@ -41,7 +41,7 @@ public class PlayerController : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hitInfo;
 
-
+        int temp = 0;
         if(Input.GetMouseButtonUp(0) && !MoveWall.isWallMoving)
         {
             if (Physics.Raycast(ray, out hitInfo , Mathf.Infinity , LayerMasks.instance.wallAndBlockLayer))
@@ -53,12 +53,13 @@ public class PlayerController : MonoBehaviour
                     Transform blockHit = hitInfo.transform;
                     float blockSize = blockHit.localScale.x;
                     int playerIndexPo = GetPlayerIndex(currentlySelectedPlayer);
+                    temp = playerIndexPo;
                     int hitBlockIndexPos = BoardSetup.instance.gridArray.IndexOf(blockHit.name) + 1;
-                    
 
                     //Debug.Log("Index: " + hitBlockIndexPos + " is "+ blockHit.position.x + " " + currentlySelectedPlayer.transform.position.y + " " + blockHit.position.z);               
                     List<int> allowableIndices= GetAllowableIndices(playerIndexPo);
                     
+
                     previousPlayerPos = currentlySelectedPlayer.transform.position;
                     byte row = (byte)(hitBlockIndexPos / 9 + 1);
                     byte col = (byte)(hitBlockIndexPos % 9);
@@ -66,7 +67,9 @@ public class PlayerController : MonoBehaviour
                     if (allowableIndices.Contains(hitBlockIndexPos))
                     {
                         gameboard.Move move = new gameboard.Move(row, col, 0);
-                        if (core.ProcessMove(move))
+                        bool tempBool = core.ProcessMove(move);
+                        
+                        if (tempBool)
                         {
                             //currentlySelectedPlayer.transform.position = new Vector3(blockHit.position.x , currentlySelectedPlayer.transform.position.y, blockHit.position.z);
                             lerpTo = new Vector3(blockHit.position.x, currentlySelectedPlayer.transform.position.y, blockHit.position.z);
@@ -74,7 +77,7 @@ public class PlayerController : MonoBehaviour
                             moveNow = true;
                             if (core.CheckForVictory())
                             {
-                                Debug.Log("Game Over");
+                                Debug.Log(currentlySelectedPlayer.ToString() + "Wins!");
                             }
                         }
                     }
@@ -249,7 +252,6 @@ public class PlayerController : MonoBehaviour
         {
             allows += "  " + allow;
         }
-        Debug.Log("Index was  " + index + " allowables are:  " + allows);
 
         return allowables;
     }

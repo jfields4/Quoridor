@@ -111,7 +111,7 @@ public class Board
         bool valid = false;
 
         Move moveSent = ConvertStringToMove(moveString);
-
+        
         //reference as if moving from smaller point to larger point
         Move move;
         if (moveSent < PlayerPositions[Current])
@@ -152,7 +152,7 @@ public class Board
     public bool ValidateMove(Move moveSent)
     {
         bool valid = false;
-            
+
         Move move = new Move(0,0,0);
         
         if (moveSent < PlayerPositions[Current])
@@ -242,7 +242,6 @@ public class Board
     private void SetNewPlayerPosition(Move move)
     {
         PlayerPositions[Current] = move;
-        Debug.Log("New Location- Row: " + move.Row + " Column: " + move.Column);
     }
 
     private void SetNewWall(Move move)
