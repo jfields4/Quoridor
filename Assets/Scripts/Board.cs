@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 using System;
 using System.Text;
+using UnityEngine;
 using System.Collections;
 
 public class Board
@@ -24,11 +24,28 @@ public class Board
                     (lValue.Column > rValue.Column));
         }
 
+        public static bool operator ==(Move lValue, Move rValue)
+        {
+            return (lValue.Row == rValue.Row && lValue.Column == rValue.Column && lValue.Value == rValue.Value);
+        }
+
+        public static bool operator !=(Move lValue, Move rValue)
+        {
+            return !(lValue == rValue);
+        }
+
         public Move (byte r, byte c, sbyte v)
         {
             Row = r;
             Column = c;
             Value = v;
+        }
+
+        public Move(Move move)
+        {
+            Row = move.Row;
+            Column = move.Column;
+            Value = move.Value;
         }
 
         public Move() { }
@@ -53,12 +70,40 @@ public class Board
 
     //public functions
 
+    public static bool operator ==(Board lValue, Board rValue)
+    {
+        bool result = true;
+
+        for (int i = 0; result && i < 10; i++)
+        {
+            for (int j = 0; result && j < 10; j++)
+            {
+                if (lValue.GameBoard[i,j] != rValue.GameBoard[i,j])
+                {
+                    result = false;
+                }
+            }
+        }
+        if (result)
+        {
+            result = lValue.PlayerPositions[0] == rValue.PlayerPositions[0] && lValue.PlayerPositions[1] == rValue.PlayerPositions[1];
+        }
+        return result;
+    }
+
+    public static bool operator !=(Board lValue, Board rValue)
+    {
+        bool result = !(lValue == rValue);
+        return result;
+    }
+
+
     public Move ConvertStringToMove(string moveSent)
     {
         Move move = new Move();
 
         move.Row = (byte)(10 - Int32.Parse(moveSent[1].ToString()));
-        move.Column = (byte)(moveSent[0] - 140);
+        move.Column = (byte)(moveSent[0] - 96);
 
         if (moveSent.Length == 2)
         {
@@ -89,8 +134,8 @@ public class Board
     {
         string moveS = "";
 
-        moveS = ((char)move.Column).ToString();
-        moveS += ((char)move.Row).ToString();
+        moveS = ((char)(move.Column + 96)).ToString();
+        moveS += (10 - move.Row).ToString();
 
         if (move.Value != 0)
         {
@@ -116,11 +161,11 @@ public class Board
         Move move;
         if (moveSent < PlayerPositions[Current])
         {
-            move = moveSent;
+            move = new Move(moveSent);
         }
         else
         {
-            move = PlayerPositions[Current];
+            move = new Move(PlayerPositions[Current]);
         }
 
         if (Adjacent(moveSent, PlayerPositions[Current]))
@@ -154,18 +199,18 @@ public class Board
         bool valid = false;
 
         Move move = new Move(0,0,0);
-        
-        if (moveSent < PlayerPositions[Current])
-        {
-            move = moveSent;
-        }
-        else
-        {
-            move = PlayerPositions[Current];
-        }
 
         if (Adjacent(moveSent, PlayerPositions[Current]))
         {
+            if (moveSent < PlayerPositions[Current])
+            {
+                move = new Move(moveSent);
+            }
+            else
+            {
+                move = new Move(PlayerPositions[Current]);
+            }
+
             //if moving up or down
             if (moveSent.Row != PlayerPositions[Current].Row)
             {
@@ -241,7 +286,7 @@ public class Board
     }
     private void SetNewPlayerPosition(Move move)
     {
-        PlayerPositions[Current] = move;
+        PlayerPositions[Current] = new Move(move);
     }
 
     private void SetNewWall(Move move)
