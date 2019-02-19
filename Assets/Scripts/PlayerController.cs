@@ -63,10 +63,12 @@ public class PlayerController : MonoBehaviour
                     previousPlayerPos = currentlySelectedPlayer.transform.position;
                     byte row = (byte)(hitBlockIndexPos / 9 + 1);
                     byte col = (byte)(hitBlockIndexPos % 9);
+                    gameboard.Move move = new gameboard.Move(row, col, 0);
 
-                    if (allowableIndices.Contains(hitBlockIndexPos))
+                    if (allowableIndices.Contains(hitBlockIndexPos) ||
+                         core.IsJump(move))
                     {
-                        gameboard.Move move = new gameboard.Move(row, col, 0);
+                        
                         bool tempBool = core.ProcessMove(move);
                         
                         if (tempBool)

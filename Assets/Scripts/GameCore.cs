@@ -54,6 +54,11 @@ public class GameCore : MonoBehaviour
         return board.CheckForEndGame();
     }
 
+    public bool IsJump(gameBoard.Move move)
+    {
+        return board.MoveIsJump(move);
+    }
+
     private gameBoard.Move GetOpponentMove()
     {
         gameBoard.Move move = new gameBoard.Move(0,0,0);

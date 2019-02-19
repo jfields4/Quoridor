@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using gamecore = GameCore;
+using gameboard = Board;
 
 public class PlacementObject : MonoBehaviour
 {
@@ -203,11 +205,9 @@ public class PlacementObject : MonoBehaviour
 
     private void PlaceSelectedWall()
     {
-
-
         Vector3 previousPosition = moveWallScript.selectedWall.position;
         moveWallScript.selectedWall.position = new Vector3(neighboursCenterPoint.x, moveWallScript.selectedWall.position.y, neighboursCenterPoint.z);
-
+        
 
         if (direction == PlacementDirection.horizontal)
         {
