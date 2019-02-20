@@ -225,23 +225,20 @@ public class Board
                 //if moving up or down
                 if (moveSent.Row != PlayerPositions[Current].Row)
                 {
-                    //if moving up or down
-                    if (moveSent.Row != PlayerPositions[Current].Row)
+                   
+                    if (GameBoard[move.Row, move.Column - 1] <= 0 &&
+                        GameBoard[move.Row, move.Column] <= 0)
                     {
-                        if (GameBoard[move.Row, move.Column - 1] <= 0 &&
-                            GameBoard[move.Row, move.Column] <= 0)
-                        {
-                            valid = true;
-                        }
+                        valid = true;
                     }
-                    //if moving left or right
-                    else
+                }
+                //if moving left or right
+                else
+                {
+                    if (GameBoard[move.Row - 1, move.Column] >= 0 &&
+                        GameBoard[move.Row, move.Column] >= 0)
                     {
-                        if (GameBoard[move.Row - 1, move.Column] >= 0 &&
-                            GameBoard[move.Row, move.Column] >= 0)
-                        {
-                            valid = true;
-                        }
+                        valid = true;
                     }
                 }
             }
