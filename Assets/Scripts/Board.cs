@@ -61,6 +61,8 @@ public class Board
     //constructor
     public Board()
     {
+        Current = 0;
+        NotCurrent = 1;
         GameBoard = new sbyte[BoardSize,BoardSize];
         PlayerPositions = new Move[] {
             new Move(9,5,0),
