@@ -27,8 +27,8 @@ public class GameCore : MonoBehaviour
     {
         bool result = false;
         
-        LastMove = move;
-        if (move != null)
+        LastMove = new gameBoard.Move(move);
+        if (!move.Equals(null))
         {
             if (ValidateMove(move))
             {

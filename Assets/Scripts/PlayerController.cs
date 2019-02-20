@@ -64,13 +64,13 @@ public class PlayerController : MonoBehaviour
                     byte row = (byte)(hitBlockIndexPos / 9 + 1);
                     byte col = (byte)(hitBlockIndexPos % 9);
                     gameboard.Move move = new gameboard.Move(row, col, 0);
-
+                    
                     if (allowableIndices.Contains(hitBlockIndexPos) ||
                          core.IsJump(move))
                     {
-                        
+                        Debug.Log("Processing move...");
                         bool tempBool = core.ProcessMove(move);
-                        
+                        Debug.Log("Processed: " + tempBool);
                         if (tempBool)
                         {
                             //currentlySelectedPlayer.transform.position = new Vector3(blockHit.position.x , currentlySelectedPlayer.transform.position.y, blockHit.position.z);
