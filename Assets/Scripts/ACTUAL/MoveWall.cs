@@ -10,10 +10,13 @@ public class MoveWall : MonoBehaviour
     public float moveSpeed;
     public Transform selectedWall { private set; get; }      // The wall to move
 
+
+
     internal static bool isWallMoving { private set; get; }  // Flag indicates whether the wall is being moved or not
 
     private bool allowMovement;                              // Flag indicates whether to allow walls movement or not
     private MovementDirections movementDirectionAllowed;     // Indicates which movement direction to allow for a wall      
+    private PlayerController playerController;
 
 
     private enum MovementDirections
@@ -27,6 +30,7 @@ public class MoveWall : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        playerController = GetComponent<PlayerController>();
 
     }
 
@@ -45,24 +49,27 @@ public class MoveWall : MonoBehaviour
 
             if(allowMovement == true) { allowMovement = false; isWallMoving = false; }
 
-            else if (Physics.Raycast(ray, out hitInfo, Mathf.Infinity, LayerMasks.instance.wallAndBlockLayer))
+            else if (Physics.Raycast(ray, out hitInfo, Mathf.Infinity, LayerMasks.instance.wallLayerOnly))
             {
-                if (hitInfo.transform.gameObject.layer == LayerMasks.instance.wallsLayerNumber)
-                {
 
-                    BoardSetup.instance.EnableDisablePlacementArrows(true);
+                // The current player should only move walls that are allowed for him
+        
+                string allowableWallsType = playerController.currentlySelectedPlayer.allowableWallToMove.ToString();
+                if (!hitInfo.transform.tag.Equals(allowableWallsType)) { return; }
 
-                    allowMovement = true;
-                    isWallMoving = true;
 
-                    selectedWall = hitInfo.transform;
-                    Debug.Log("Selected wall name  " + selectedWall.name);
+                BoardSetup.instance.EnableDisablePlacementArrows(true);
 
-                    //Debug.Log("Hit wall rotation is    " +hitInfo.transform.localEulerAngles);
+                allowMovement = true;
+                isWallMoving = true;
 
-                    int yAngle = (int)hitInfo.transform.localEulerAngles.y;
+                selectedWall = hitInfo.transform;
+                Debug.Log("Selected wall name  " + selectedWall.name);
+
+                //Debug.Log("Hit wall rotation is    " +hitInfo.transform.localEulerAngles);
+
+                int yAngle = (int)hitInfo.transform.localEulerAngles.y;
                
-                }
             }
         }
 

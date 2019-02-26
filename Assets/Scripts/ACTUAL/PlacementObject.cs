@@ -87,6 +87,10 @@ public class PlacementObject : MonoBehaviour
 
         PlaceSelectedWall();
 
+        // Change the layer of the wall placed so that it can't be moved again.(Raycast will ignore this wall)
+        moveWallScript.selectedWall.gameObject.layer = LayerMasks.instance.placedWallsLayerNumber;
+        GameObject.FindGameObjectWithTag("GameController").GetComponent<PlayerController>().ToggleActivePlayer();
+
     }
 
 
@@ -205,6 +209,7 @@ public class PlacementObject : MonoBehaviour
 
     private void PlaceSelectedWall()
     {
+
         Vector3 previousPosition = moveWallScript.selectedWall.position;
         moveWallScript.selectedWall.position = new Vector3(neighboursCenterPoint.x, moveWallScript.selectedWall.position.y, neighboursCenterPoint.z);
         
@@ -225,8 +230,11 @@ public class PlacementObject : MonoBehaviour
         {
             moveWallScript.selectedWall.position = previousPosition;
             Debug.LogWarning($"The placement arrow:  \"{gameObject.name}\" parented to: \"{transform.parent.name}\" is incorrectly oriented.The wall \"{moveWallScript.selectedWall.name}\" won't be moved");
-        }
+        }    
+
     }
+
+
 
 
     // Update is called once per frame

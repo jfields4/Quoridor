@@ -1,32 +1,21 @@
 fileFormatVersion: 2
-guid: be8ce371cc1da21429121d55f5d3966c
+guid: 6079a16607d1000459a8c05b98a9522e
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
     100000: //RootNode
-    100002: Cylinder
-    100004: Cylinder_2
-    100006: HorzPlacement
-    100008: VertPlacement
+    100002: HorzPlacement_1
+    100004: VertPlacement_1
     400000: //RootNode
-    400002: Cylinder
-    400004: Cylinder_2
-    400006: HorzPlacement
-    400008: VertPlacement
+    400002: HorzPlacement_1
+    400004: VertPlacement_1
     2100000: No Name
-    2300000: Cylinder
-    2300002: Cylinder_2
-    2300004: HorzPlacement
-    2300006: VertPlacement
-    3300000: Cylinder
-    3300002: Cylinder_2
-    3300004: HorzPlacement
-    3300006: VertPlacement
-    4300000: VertPlacement
-    4300002: Cylinder
-    4300004: HorzPlacement
-    4300006: Cylinder_2
-    2186277476908879412: ImportLogs
+    2300000: HorzPlacement_1
+    2300002: VertPlacement_1
+    3300000: HorzPlacement_1
+    3300002: VertPlacement_1
+    4300000: VertPlacement_1
+    4300002: HorzPlacement_1
   externalObjects: {}
   materials:
     importMaterials: 1
@@ -58,7 +47,7 @@ ModelImporter:
     isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 1
+    globalScale: 100
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
