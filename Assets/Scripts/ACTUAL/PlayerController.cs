@@ -4,6 +4,7 @@ using UnityEngine;
 using gamecore = GameCore;
 using gameboard = Board;
 using UnityEngine.UI;
+using System;
 
 public class PlayerController : MonoBehaviour
 {
@@ -26,12 +27,12 @@ public class PlayerController : MonoBehaviour
     internal Player currentlySelectedPlayer;        // The player that is currently selected
     internal Players lastMoveBy;                    // The player that made the last move
     private bool isPlayer1Selected;                 // Shows which player is selected corrently
-    private Vector3 playerNextDestination;                         // The interpolation end point
+    private Vector3 playerNextDestination;          // The interpolation end point
     private bool allowToggle = true;                // Flag indicates whether to allow switching between players
     private bool shouldJump;                        // Flag indicates whether the player should jump or not
     private float jumpAnim;                         // The jump animation time keeper
     private Vector3 playerStationaryPos;            // The position of the player when it was stationary before jumping
-    private bool allowPlayerAction = true;                  // Should the player be allowed to make a move now?
+    private bool allowPlayerAction = true;          // Should the player be allowed to make a move now?
 
 
     public enum Players
@@ -60,6 +61,41 @@ public class PlayerController : MonoBehaviour
 
 
 
+    public class MoveTuple : IEquatable<MoveTuple>
+    {
+        public byte row;
+        public char col;
+        public byte indexInGrid;
+
+        public override string ToString()
+        {
+            return ($"[ Row: {row} , Col: {col} , GridIndex: {indexInGrid} ]");
+        }
+
+        public bool Equals(MoveTuple other)
+        {
+            return (this == other);
+        }
+
+
+        public static bool operator == (MoveTuple one, MoveTuple two)
+        {
+            if ((object)two == null) { return false; }
+
+            return (one.indexInGrid == two.indexInGrid);
+        }
+
+
+        public static bool operator != (MoveTuple one, MoveTuple two)
+        {
+            if ((object)two == null) { return true; }
+
+            return (one.indexInGrid != two.indexInGrid);
+        }
+    }
+
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -76,7 +112,6 @@ public class PlayerController : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hitInfo;
 
-        int temp = 0;
 
         if(Input.GetMouseButtonUp(0) && !MoveWall.isWallMoving && allowPlayerAction)
         {
@@ -89,21 +124,23 @@ public class PlayerController : MonoBehaviour
 
                     bool movingOnOtherPlayer = false;
 
-                    Transform blockHit = hitInfo.transform;
-                    float blockSize = blockHit.localScale.x;
-                    int playerPos = GetPlayerBoardPosition(currentlySelectedPlayer);
-                    temp = playerPos;
-                    int hitBlockPos = BoardSetup.instance.gridArray.IndexOf(blockHit.name) + 1;
+                    BoardSetup.Block blockHit = new BoardSetup.Block(hitInfo.transform.name, hitInfo.transform);
+                    MoveTuple hitBlockPosition = GetBlockPosition(blockHit);
+
+                    //float blockSize = blockHit.blockTransform.localScale.x;
+
+
+                    //int playerPos = GetPlayerBoardPosition(currentlySelectedPlayer);
 
 
                     if (currentlySelectedPlayer.playerType == Players.Player1)
                     {
-                        if(GetPlayerBoardPosition(player2) == hitBlockPos) { movingOnOtherPlayer = true; }
+                        if(GetPlayerBoardPosition(player2) == hitBlockPosition) { movingOnOtherPlayer = true; }
                     }
                         
                     else
                     {
-                        if (GetPlayerBoardPosition(player1) == hitBlockPos) { movingOnOtherPlayer = true; }
+                        if (GetPlayerBoardPosition(player1) == hitBlockPosition) { movingOnOtherPlayer = true; }
                     }
 
 
@@ -111,104 +148,26 @@ public class PlayerController : MonoBehaviour
                     if(!movingOnOtherPlayer)
                     {
 
-
-                        //Debug.Log("Index: " + hitBlockIndexPos + " is "+ blockHit.position.x + " " + currentlySelectedPlayer.transform.position.y + " " + blockHit.position.z);               
-                        List<int> allowablePositions = GetAllowablePositions(playerPos);
-
                         previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
-                        byte row = (byte)(hitBlockPos / 9 + 1);
-                        byte col = (byte)(hitBlockPos % 9);
-                        gameboard.Move move = new gameboard.Move(row, col, 0);
 
-
-                        if (allowablePositions.Contains(hitBlockPos))
-                        {
-
-                            Transform selectedPlayer = currentlySelectedPlayer.playerGameObject.transform;
-
-                            Vector3 rayOrigin = new Vector3(selectedPlayer.position.x, selectedPlayer.position.y - (selectedPlayer.localScale.y / 2), selectedPlayer.position.z);
-
-                            // If there is no wall infront of the player then move
-                            if (!Physics.Raycast(rayOrigin, blockHit.position - rayOrigin, Mathf.Infinity, LayerMasks.instance.placedWallsOnly))
-                            {
-                                previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
-                                //currentlySelectedPlayer.transform.position = new Vector3(blockHit.position.x , currentlySelectedPlayer.transform.position.y, blockHit.position.z);
-                                playerNextDestination = new Vector3(blockHit.position.x, currentlySelectedPlayer.playerGameObject.transform.position.y, blockHit.position.z);
-                                moveNow   = true;        
-                                lastMoveBy = currentlySelectedPlayer.playerType;
-                            }
-
-
-                        }
+                        if (MovePlayer(hitBlockPosition.col, hitBlockPosition.row)) { }
 
                         else
                         {
                             // might be able to jump
-                            int jumpablePos = GetJumpablePosition();
-
-                            if (hitBlockPos == jumpablePos)
-                            {
-                                //check for wall 
-                                Transform selectedPlayer = currentlySelectedPlayer.playerGameObject.transform;
-
-                                Vector3 rayOrigin = new Vector3(selectedPlayer.position.x , selectedPlayer.position.y - (selectedPlayer.localScale.y / 2), selectedPlayer.position.z);
-
-                                if (Physics.Raycast(rayOrigin , blockHit.position - rayOrigin , Mathf.Infinity , LayerMasks.instance.placedWallsOnly))
-                                {
-                                    Debug.Log("Don't jump i see a wall");
-                                }
-
-                                else
-                                {
-                                    /* Jump animation */
-
-                                    lastMoveBy = currentlySelectedPlayer.playerType;          
-
-                                    // move parabola
-                                    shouldJump = true;
-                                    playerStationaryPos = currentlySelectedPlayer.playerGameObject.transform.position;
-                                    playerNextDestination = new Vector3(blockHit.position.x, currentlySelectedPlayer.playerGameObject.transform.position.y, blockHit.position.z);
-                                    jumpAnim = 0;
-                                }
-
-                            }
-
+                            TryJump(hitBlockPosition);
                         }
 
                     }
 
-                    else { Debug.Log("Moving on the other player is not allowed"); }
-
-
-     
-
-
-                    /*
-                    if (allowableIndices.Contains(hitBlockIndexPos) ||
-                         core.IsJump(move))
-                    {
-                        Debug.Log("Processing move...");
-                        bool tempBool = core.ProcessMove(move);
-                        Debug.Log("Processed: " + tempBool);
-                        if (tempBool)
-                        {
-                            //currentlySelectedPlayer.transform.position = new Vector3(blockHit.position.x , currentlySelectedPlayer.transform.position.y, blockHit.position.z);
-                            lerpTo = new Vector3(blockHit.position.x, currentlySelectedPlayer.transform.position.y, blockHit.position.z);
-
-                            moveNow = true;
-                            if (core.CheckForVictory())
-                            {
-                                Debug.Log(currentlySelectedPlayer.ToString() + "Wins!");
-                            }
-                        }
-                    } */
+                    else { Debug.LogWarning("Moving on the other player is not allowed"); }
 
                 }
 
                 // A player was clicked
                 else
                 {
-                    Debug.Log("Moving on the other player is not allowed");
+                    Debug.LogWarning("Moving on the other player is not allowed");
                 }
 
             }
@@ -250,19 +209,7 @@ public class PlayerController : MonoBehaviour
 
             jumpAnim += Time.deltaTime;
             actingPlayer.position = MathParabola.Parabola(playerStationaryPos, playerNextDestination, jumpHeight, jumpAnim / timeToStayInAir);
-
-            
-            /*  This is one way to know if the player has reached the target grid so stop the jump. The other approach is for the player to inform if it is triggered by a block
-            if (Mathf.Abs(currentPlayerHeight - playerInitialHeight) <= 2f && Vector3.Distance(playerNextDestination, actingPlayer.position) <= 5f)
-            {
-                currentlySelectedPlayer.playerGameObject.transform.position = new Vector3(playerNextDestination.x, playerInitialHeight, playerNextDestination.z);
-                allowMove = true;
-                shouldJump = false;
-
-                // Change player as the move has been completely made now
-                ToggleActivePlayer();
-            }
-            */
+    
 
         }
         
@@ -293,9 +240,11 @@ public class PlayerController : MonoBehaviour
 
 
 
-    public List<int> GetAllowablePositions(int index)
+    public List<MoveTuple> GetAllowablePositions(MoveTuple blockPosition)
     {
-        List<int> allowables = new List<int>();
+        List<MoveTuple> allowables = new List<MoveTuple>();
+
+        int index = blockPosition.indexInGrid;
 
         // lies in the left most column on the grid
         if (((index - 1) % 9) == 0)
@@ -304,22 +253,22 @@ public class PlayerController : MonoBehaviour
             // top left block
             if (index == 1)
             {
-                allowables.Add(index + 1);
-                allowables.Add(index + 9);
+                allowables.Add(IndexToMoveTuple(index + 1));
+                allowables.Add(IndexToMoveTuple(index + 9));
             }
 
             //bottom left block
             else if (index == 82)
             {
-                allowables.Add(index + 1);
-                allowables.Add(index - 9);
+                allowables.Add(IndexToMoveTuple(index + 1));
+                allowables.Add(IndexToMoveTuple(index - 9));
             }
 
             else
             {
-                allowables.Add(index + 1);
-                allowables.Add(index + 9);
-                allowables.Add(index - 9);
+                allowables.Add(IndexToMoveTuple(index + 1));
+                allowables.Add(IndexToMoveTuple(index + 9));
+                allowables.Add(IndexToMoveTuple(index - 9));
             }
         }
 
@@ -332,22 +281,22 @@ public class PlayerController : MonoBehaviour
             // top right block
             if (index == 9)
             {
-                allowables.Add(index - 1);
-                allowables.Add(index + 9);
+                allowables.Add(IndexToMoveTuple(index - 1));
+                allowables.Add(IndexToMoveTuple(index + 9));
             }
 
             //bottom right block
             else if (index == 90)
             {
-                allowables.Add(index - 1);
-                allowables.Add(index - 9);
+                allowables.Add(IndexToMoveTuple(index - 1));
+                allowables.Add(IndexToMoveTuple(index - 9));
             }
 
             else
             {
-                allowables.Add(index - 1);
-                allowables.Add(index - 9);
-                allowables.Add(index + 9);
+                allowables.Add(IndexToMoveTuple(index - 1));
+                allowables.Add(IndexToMoveTuple(index - 9));
+                allowables.Add(IndexToMoveTuple(index + 9));
             }
         }
 
@@ -360,22 +309,22 @@ public class PlayerController : MonoBehaviour
             // top left block
             if (index == 1)
             {
-                allowables.Add(index + 1);
-                allowables.Add(index + 9);
+                allowables.Add(IndexToMoveTuple(index + 1));
+                allowables.Add(IndexToMoveTuple(index + 9));
             }
 
             // top right block
             if (index == 9)
             {
-                allowables.Add(index - 1);
-                allowables.Add(index + 9);
+                allowables.Add(IndexToMoveTuple(index - 1));
+                allowables.Add(IndexToMoveTuple(index + 9));
             }
 
             else
             {
-                allowables.Add(index + 1);
-                allowables.Add(index - 1);
-                allowables.Add(index + 9);
+                allowables.Add(IndexToMoveTuple(index + 1));
+                allowables.Add(IndexToMoveTuple(index - 1));
+                allowables.Add(IndexToMoveTuple(index + 9));
             }
         }
 
@@ -388,22 +337,22 @@ public class PlayerController : MonoBehaviour
             // bottom left block
             if (index == 73)
             {
-                allowables.Add(index + 1);
-                allowables.Add(index - 9);
+                allowables.Add(IndexToMoveTuple(index + 1));
+                allowables.Add(IndexToMoveTuple(index - 9));
             }
 
             // bottom right block
             if (index == 81)
             {
-                allowables.Add(index - 1);
-                allowables.Add(index - 9);
+                allowables.Add(IndexToMoveTuple(index - 1));
+                allowables.Add(IndexToMoveTuple(index - 9));
             }
 
             else
             {
-                allowables.Add(index + 1);
-                allowables.Add(index - 1);
-                allowables.Add(index - 9);
+                allowables.Add(IndexToMoveTuple(index + 1));
+                allowables.Add(IndexToMoveTuple(index - 1));
+                allowables.Add(IndexToMoveTuple(index - 9));
             }
         }
 
@@ -411,17 +360,16 @@ public class PlayerController : MonoBehaviour
         // lies in the midle area of the grid
         else
         {
-            allowables.Add(index + 1);
-            allowables.Add(index - 1);
-            allowables.Add(index + 9);
-            allowables.Add(index - 9);
+            allowables.Add(IndexToMoveTuple(index + 1));
+            allowables.Add(IndexToMoveTuple(index - 1));
+            allowables.Add(IndexToMoveTuple(index + 9));
+            allowables.Add(IndexToMoveTuple(index - 9));
         }
 
-        string allows = "";
 
-        foreach (int allow in allowables)
+        foreach (MoveTuple allow in allowables)
         {
-            allows += "  " + allow;
+            //Debug.Log("Move Allowed:  " + allow);
         }
 
         return allowables;
@@ -430,7 +378,7 @@ public class PlayerController : MonoBehaviour
 
 
 
-    public int GetPlayerBoardPosition(Player player)
+    public MoveTuple GetPlayerBoardPosition(Player player)
     {
         RaycastHit hitInfo;
         GameObject playerObject = player.playerGameObject;
@@ -439,24 +387,23 @@ public class PlayerController : MonoBehaviour
         if (Physics.Raycast(playerObject.transform.position, -playerObject.transform.up, out hitInfo, 100 , LayerMasks.instance.blockLayerOnly))
         {
 
-            //if (hitInfo.transform.gameObject.layer != LayerMasks.instance.blocksLayerNumber) { return -1; }
+            BoardSetup.Block blockHit = new BoardSetup.Block(hitInfo.transform.name , hitInfo.transform);
 
-            int index = BoardSetup.instance.gridArray.IndexOf(hitInfo.transform.name) + 1;
-            //Debug.Log("Hit for player position check " + hitInfo.transform.name + "  Index is is  " + index);
-            return index;
+            int index = BoardSetup.instance.gridArray.IndexOf(blockHit) + 1;
+            return IndexToMoveTuple(index);
         }
 
-        return -1;
+        return null;
     }
 
 
 
 
-    public int GetJumpablePosition()
+    public MoveTuple GetJumpablePosition()
     {
 
-        int currentPlayerPos = GetPlayerBoardPosition(currentlySelectedPlayer);
-        int otherPlayerPos   = GetPlayerBoardPosition((currentlySelectedPlayer.playerType == Players.Player1) ? player2 : player1);
+        int currentPlayerPos = GetPlayerBoardPosition(currentlySelectedPlayer).indexInGrid;
+        int otherPlayerPos   = GetPlayerBoardPosition((currentlySelectedPlayer.playerType == Players.Player1) ? player2 : player1).indexInGrid;
 
         // Vertical jumps
         int jump1 = currentPlayerPos + 18;
@@ -466,12 +413,13 @@ public class PlayerController : MonoBehaviour
         int jump3 = currentPlayerPos + 2;
         int jump4 = currentPlayerPos - 2;
 
+        MoveTuple moveTuple;
 
 
         if (!PositionLiesInBoard(jump1) && !PositionLiesInBoard(jump2) && !PositionLiesInBoard(jump3) && !PositionLiesInBoard(jump4))
         {
             //Debug.Log("NO JUMP ALLOWED NO POS ON BOARD currentPlayerPos " + currentPlayerPos + " otherPlayerPos  " + otherPlayerPos + " jump1 " + jump1 + " jump2 " + jump2);
-            return -1;
+            moveTuple = null;
         }
 
 
@@ -479,14 +427,14 @@ public class PlayerController : MonoBehaviour
         {
             // jump 1 is allowed
             //Debug.Log("Jump1 is allowed  pos is  " + jump1 + " currentPlayerPos " + currentPlayerPos + " otherPlayerPos  " + otherPlayerPos + " jump1 " + jump1 + " jump2 " + jump2);
-            return jump1;
+            moveTuple = IndexToMoveTuple(jump1);
         }
 
         else if ((currentPlayerPos - 9) == otherPlayerPos)
         {
             // jump 1 is allowed
             //Debug.Log("Jump2 is allowed  pos is  " + jump2 + " currentPlayerPos " + currentPlayerPos + " otherPlayerPos  " + otherPlayerPos + " jump1 " + jump1 + " jump2 " + jump2);
-            return jump2;
+            moveTuple = IndexToMoveTuple(jump2);
         }
 
 
@@ -494,21 +442,24 @@ public class PlayerController : MonoBehaviour
         {
             // jump 3 is allowed
             //Debug.Log("Jump3 is allowed  pos is  " + jump3 + " currentPlayerPos " + currentPlayerPos + " otherPlayerPos  " + otherPlayerPos + " jump3 " + jump3 + " jump4 " + jump4);
-            return jump3;
+            moveTuple = IndexToMoveTuple(jump3);
         }
 
         else if ((currentPlayerPos - 1) == otherPlayerPos)
         {
             // jump 4 is allowed
             //Debug.Log("Jump4 is allowed  pos is  " + jump4 + " currentPlayerPos " + currentPlayerPos + " otherPlayerPos  " + otherPlayerPos + " jump3 " + jump3 + " jump4 " + jump4);
-            return jump4;
+            moveTuple = IndexToMoveTuple(jump4);
         }
 
         else
         {
             //Debug.Log("NO VALID JUMP FOUND FOR THE ACTIVE PLAYER:  " + currentlySelectedPlayer.playerType + "  currentPlayerPos " + currentPlayerPos + " otherPlayerPos  " + otherPlayerPos + " jump1 " + jump1 + " jump2 " + jump2 + " jump3 " + jump3 + " jump4 " + jump4);
-            return -1;
+            moveTuple  = null;
         }
+
+
+        return moveTuple;
 
     }
 
@@ -540,9 +491,177 @@ public class PlayerController : MonoBehaviour
 
 
 
+    public MoveTuple IndexToMoveTuple(int index)
+    {
+        MoveTuple moveTuple = new MoveTuple();
+        int rowEndIndex = ReturnNextMultiple(index, 9);
+        
+
+        byte rowNumber = (byte)  (10 - (rowEndIndex / 9));     // The rows start from 9 go in descending order, so the first row is 9 the second is 8.
+        int colNumber  = index - (9 * (9 - rowNumber));
+        //Debug.Log(" For player  " + currentlySelectedPlayer.playerType + "indexToConvert  " + index + "  rowEndIndex  " + rowEndIndex + " rowNumber " + rowNumber + " colNumber " + colNumber);
+        moveTuple.indexInGrid = (byte)index;
+        moveTuple.row = rowNumber;
+        moveTuple.col = GetCharFromHexCode("4" + colNumber);
+
+        return moveTuple;
+
+    }
+
+
+
+
+
+    public char GetCharFromHexCode(string hexCode)
+    {
+        return ((char)int.Parse(hexCode, System.Globalization.NumberStyles.HexNumber));
+    }
+
+
+
+
+
+
+    public int ReturnNextMultiple(int lookAheadOf , int multipleOf)
+    { 
+        lookAheadOf++;
+
+        while(true)
+        {
+            if(lookAheadOf % multipleOf == 0) { return lookAheadOf; }
+            lookAheadOf++;
+        }
+    }
+
+
+
+
     public void ToggleActivePlayer()
     {
         if (currentlySelectedPlayer.GetHashCode().Equals(player1.GetHashCode())) { ChangeToPlayer2(true); /*Debug.Log("Toggled active player now becomes PLAYER2"); */} 
         else {  ChangeToPlayer1(true);/* Debug.Log("Toggled active player now becomes PLAYER1");*/ }
     }
+
+
+
+
+    public int GetIndexFromRowCol(char col, int row)
+    {
+        int colNumber   = Int32.Parse((((int)col).ToString("X"))[1] + "");
+        int rowEndIndex = (10 - row) * 9; 
+        return  rowEndIndex - (9 - colNumber);     // The row number starts from the bottom
+    }
+
+
+
+
+    public bool MovePlayer(char col , int row)
+    {
+
+        col = (col + "").ToUpper()[0];
+
+        MoveTuple playerPos       = GetPlayerBoardPosition(currentlySelectedPlayer);
+        MoveTuple moveTo          = IndexToMoveTuple(GetIndexFromRowCol(col , row));
+        BoardSetup.Block blockHit = BoardSetup.instance.gridArray[moveTo.indexInGrid - 1];
+
+        //Debug.Log("Blockhit is  " + blockHit + "  playerPos is  " + playerPos + "  moveTo is  " + moveTo);
+
+        List<MoveTuple> allowablePositions = GetAllowablePositions(playerPos);
+
+        previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
+
+
+        if (allowablePositions.Contains(moveTo))
+        {
+            
+            Transform selectedPlayer = currentlySelectedPlayer.playerGameObject.transform;
+
+            Vector3 rayOrigin = new Vector3(selectedPlayer.position.x, selectedPlayer.position.y - (selectedPlayer.localScale.y / 2), selectedPlayer.position.z);
+
+            // If there is no wall infront of the player then move
+            if (!Physics.Raycast(rayOrigin, blockHit.blockTransform.position - rayOrigin, Mathf.Infinity, LayerMasks.instance.placedWallsOnly))
+            {
+                previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
+                //currentlySelectedPlayer.transform.position = new Vector3(blockHit.position.x , currentlySelectedPlayer.transform.position.y, blockHit.position.z);
+                playerNextDestination = new Vector3(blockHit.blockTransform.position.x, currentlySelectedPlayer.playerGameObject.transform.position.y, blockHit.blockTransform.position.z);
+                moveNow = true;
+                lastMoveBy = currentlySelectedPlayer.playerType;
+                return true;
+            }
+
+            else
+            {
+                return false;
+            }
+
+        }
+
+        else
+        {
+            return false;
+        }
+
+    }
+
+
+
+
+    public bool TryJump(MoveTuple jumpTo)
+    {
+
+        MoveTuple jumpablePos = GetJumpablePosition();
+        BoardSetup.Block targetBlock = BoardSetup.instance.gridArray[jumpTo.indexInGrid - 1];
+
+
+        if (jumpTo == jumpablePos)
+        {
+
+            //check for wall 
+            Transform selectedPlayer = currentlySelectedPlayer.playerGameObject.transform;
+
+            Vector3 rayOrigin = new Vector3(selectedPlayer.position.x, selectedPlayer.position.y - (selectedPlayer.localScale.y / 2), selectedPlayer.position.z);
+
+            if (Physics.Raycast(rayOrigin, targetBlock.blockTransform.position - rayOrigin, Mathf.Infinity, LayerMasks.instance.placedWallsOnly))
+            {
+                Debug.Log("Don't jump i see a wall");
+                return false;
+            }
+
+            else
+            {
+                /* Jump animation */
+
+                lastMoveBy = currentlySelectedPlayer.playerType;
+
+                // move parabola
+                shouldJump = true;
+                playerStationaryPos = currentlySelectedPlayer.playerGameObject.transform.position;
+                playerNextDestination = new Vector3(targetBlock.blockTransform.position.x, currentlySelectedPlayer.playerGameObject.transform.position.y, targetBlock.blockTransform.position.z);
+                jumpAnim = 0;
+
+                return true;
+            }
+
+        }
+
+        else { return false; }
+
+    }
+
+
+
+    public MoveTuple GetBlockPosition(BoardSetup.Block block)
+    {
+        MoveTuple moveTuple = null;
+        int blockIndex = BoardSetup.instance.gridArray.IndexOf(block);
+
+        if(blockIndex != -1)
+        {
+            moveTuple = IndexToMoveTuple(blockIndex + 1);
+        }
+
+        return moveTuple;
+    }
+
+
 }
