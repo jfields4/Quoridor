@@ -3,7 +3,7 @@ using System;
 using System.Text;
 using UnityEngine;
 using System.Collections;
-
+using static WallValidation;
 public class Board
 {
     //move class
@@ -26,7 +26,9 @@ public class Board
 
         public static bool operator ==(Move lValue, Move rValue)
         {
-            return (lValue.Row == rValue.Row && lValue.Column == rValue.Column && lValue.Value == rValue.Value);
+            return ((lValue.Row == rValue.Row) &&
+                    (lValue.Column == rValue.Column) &&
+                    lValue.Value == rValue.Value);
         }
 
         public static bool operator !=(Move lValue, Move rValue)
@@ -34,7 +36,7 @@ public class Board
             return !(lValue == rValue);
         }
 
-        public Move (byte r, byte c, sbyte v)
+        public Move(byte r, byte c, sbyte v)
         {
             Row = r;
             Column = c;
@@ -47,71 +49,102 @@ public class Board
             Column = otherMove.Column;
             Value = otherMove.Value;
         }
+
         public Move() { }
     }
 
+    //used for validating wall placements
+    WallValidation Validator;
+
     //member variables
-    private sbyte[,] GameBoard;
+    public sbyte[,] GameBoard;
     const byte BoardSize = 10;
 
-    private Move[] PlayerPositions;
-    private byte Current;
-    private byte NotCurrent;
+    public Move[] PlayerPositions;
+    public byte Current;
+    public byte NotCurrent;
+    public byte Turns;
+    public byte[] Walls;
 
     //constructor
     public Board()
     {
-        Current = 0;
-        NotCurrent = 1;
-        GameBoard = new sbyte[BoardSize,BoardSize];
+        GameBoard = new sbyte[BoardSize, BoardSize];
+        Walls = new byte[2];
         PlayerPositions = new Move[] {
             new Move(9,5,0),
             new Move(1,5,0) };
+
+        Validator = new WallValidation();
+
+        //build walls around border
+        //top
+        for (int i = 0; i < 10; i++)
+        {
+            GameBoard[0, i] = 1;
+        }
+        //bottom
+        for (int i = 0; i < 10; i++)
+        {
+            GameBoard[9, i] = 1;
+        }
+        //left
+        for (int i = 0; i < 10; i++)
+        {
+            GameBoard[i, 0] = -1;
+        }
+        //right
+        for (int i = 0; i < 10; i++)
+        {
+            GameBoard[i, 9] = -1;
+        }
+
+        Turns = 0;
+        Current = 0;
+        NotCurrent = 1;
+        for (int i = 0; i <= 1; i++)
+        {
+            Walls[i] = 10;
+        }
+    }
+
+    //copy constructor
+    public Board(Board otherBoard)
+    {
+        GameBoard = new sbyte[BoardSize, BoardSize];
+        PlayerPositions = new Move[2];
+        Walls = new byte[2];
+
+        Buffer.BlockCopy(otherBoard.GameBoard, 0, GameBoard, 0, 100);
+
+        PlayerPositions[0] = new Move(otherBoard.PlayerPositions[0]);
+        PlayerPositions[1] = new Move(otherBoard.PlayerPositions[1]);
+
+        Current = otherBoard.Current;
+        NotCurrent = otherBoard.NotCurrent;
+        Turns = otherBoard.Turns;
+        Validator = new WallValidation();
+
+        Walls[0] = otherBoard.Walls[0];
+        Walls[1] = otherBoard.Walls[1];
     }
 
     //public functions
-
-    public static bool operator ==(Board lValue, Board rValue)
-    {
-        bool result = true;
-
-        for (int i = 0; result && i < 10; i++)
-        {
-            for (int j = 0; result && j < 10; j++)
-            {
-                if (lValue.GameBoard[i,j] != rValue.GameBoard[i,j])
-                {
-                    result = false;
-                }
-            }
-        }
-        if (result)
-        {
-            result = lValue.PlayerPositions[0] == rValue.PlayerPositions[0] && lValue.PlayerPositions[1] == rValue.PlayerPositions[1];
-        }
-        return result;
-    }
-
-    public static bool operator !=(Board lValue, Board rValue)
-    {
-        bool result = !(lValue == rValue);
-        return result;
-    }
-
 
     public Move ConvertStringToMove(string moveSent)
     {
         Move move = new Move();
 
-        move.Row = (byte)(10 - Int32.Parse(moveSent[1].ToString()));
-        move.Column = (byte)(moveSent[0] - 96);
-
         if (moveSent.Length == 2)
         {
+            move.Row = (byte)(10 - int.Parse(moveSent[1].ToString()));
+            move.Column = (byte)(moveSent[0] - 96);
             move.Value = 0;
         }
         else
         {
+            move.Row = (byte)(9 - int.Parse(moveSent[1].ToString()));
+            move.Column = (byte)(moveSent[0] - 96);
             if (moveSent[2] == 'h')
             {
                 move.Value = 1;
@@ -136,10 +169,13 @@ public class Board
         string moveS = "";
 
         moveS = ((char)(move.Column + 96)).ToString();
-        moveS += (10 - move.Row).ToString();
-
-        if (move.Value != 0)
+        if (move.Value == 0)
         {
+            moveS += (10 - move.Row).ToString();
+        }
+        else
+        {
+            moveS += (9 - move.Row).ToString();
             if (move.Value == 1)
             {
                 moveS += "h";
@@ -154,185 +190,178 @@ public class Board
 
     public bool ValidateMove(string moveString)
     {
-        bool valid = false;
-
         Move moveSent = ConvertStringToMove(moveString);
-        
-        //reference as if moving from smaller point to larger point
-        Move move;
-        if (moveSent < PlayerPositions[Current])
-        {
-            move = new Move(moveSent);
-        }
-        else
-        {
-            move = new Move(PlayerPositions[Current]);
-        }
 
-        if (MoveIsJump(moveSent))
-        {
-            valid = true;
-        }
-        else
-        {
-            if (Adjacent(moveSent, PlayerPositions[Current]))
-            {
-                //if moving up or down
-                if (moveSent.Row != PlayerPositions[Current].Row)
-                {
-                    if (GameBoard[move.Row, move.Column - 1] <= 0 &&
-                        GameBoard[move.Row, move.Column] <= 0)
-                    {
-                        valid = true;
-                    }
-                }
-                //if moving left or right
-                else
-                {
-                    if (GameBoard[move.Row - 1, move.Column] >= 0 &&
-                        GameBoard[move.Row, move.Column] >= 0)
-                    {
-                        valid = true;
-                    }
-                }
-            }
-        }
-
-        return valid;
+        return ValidateMove(moveSent);
     }
 
     public bool ValidateMove(Move moveSent)
     {
         bool valid = false;
+        Move move;
 
-        Move move = new Move(0,0,0);
-
-        if (moveSent < PlayerPositions[Current])
+        /***************checks to make sure invalid moves don't cause out of bounds errors********************/
+        if (moveSent.Row < 1 || moveSent.Column < 1 || moveSent.Row > 9 || moveSent.Column > 9)
         {
-            move = new Move(moveSent);
-        }
-        else
-        {
-            move = new Move(PlayerPositions[Current]);
+            return false;
         }
 
-        if (MoveIsJump(moveSent))
+        foreach (Move m in PlayerPositions)
         {
-            valid = true;
+            if (m.Row > 9 || m.Row < 1 || m.Column > 9 || m.Row < 1)
+                return false;
         }
-        else
+        /*****************************************************************************************************/
+
+        //if wall
+        if (moveSent.Value != 0)
         {
-            if (Adjacent(moveSent, PlayerPositions[Current]))
+            if (Walls[Current] == 0)
             {
-                //if moving up or down
-                if (moveSent.Row != PlayerPositions[Current].Row)
+                valid = false;
+            }
+            else
+            {
+                valid = Validator.Validate(this, moveSent);
+            }
+        }
+        //if movement
+        else
+        {
+            //reference as if moving from smaller point to larger point
+            if (moveSent < PlayerPositions[Current])
+            {
+                move = new Move(moveSent);
+            }
+            else
+            {
+                move = new Move(PlayerPositions[Current]);
+            }
+
+            if (MoveIsJump(moveSent))
+            {
+                valid = true;
+            }
+            else if (moveSent != PlayerPositions[NotCurrent])
+            {
+                if (Adjacent(moveSent, PlayerPositions[Current]))
                 {
-                   
-                    if (GameBoard[move.Row, move.Column - 1] <= 0 &&
-                        GameBoard[move.Row, move.Column] <= 0)
+                    //if moving up or down
+                    if (moveSent.Row != PlayerPositions[Current].Row)
                     {
-                        valid = true;
+                        if (GameBoard[move.Row, move.Column - 1] <= 0 &&
+                            GameBoard[move.Row, move.Column] <= 0)
+                        {
+                            valid = true;
+                        }
                     }
-                }
-                //if moving left or right
-                else
-                {
-                    if (GameBoard[move.Row - 1, move.Column] >= 0 &&
-                        GameBoard[move.Row, move.Column] >= 0)
+                    //if moving left or right
+                    else
                     {
-                        valid = true;
+                        if (GameBoard[move.Row - 1, move.Column] >= 0 &&
+                            GameBoard[move.Row, move.Column] >= 0)
+                        {
+                            valid = true;
+                        }
                     }
                 }
             }
         }
-        Debug.Log("Valid " + valid);
+
         return valid;
     }
 
     public bool MoveIsJump(Move move)
     {
-        bool isJump = false;
-
-        if (Adjacent(PlayerPositions[0], PlayerPositions[1]))
+        foreach (Move m in PlayerPositions)
         {
-            //jumping forward
-            if (move.Row > PlayerPositions[Current].Row)
+            if (m.Row > 9 || m.Row < 1 || m.Column > 9 || m.Row < 1)
+                return false;
+        }
+
+        bool isJump = false;
+        if (!(PlayerPositions[NotCurrent].Column > 9 || PlayerPositions[NotCurrent].Column < 1))
+        {
+            if (Adjacent(PlayerPositions[0], PlayerPositions[1]))
             {
-                //if move is diagonal
-                if (Math.Abs(move.Row - PlayerPositions[Current].Row) != 2)
+                //jumping forward
+                if (move.Row > PlayerPositions[Current].Row)
                 {
-                    //if wall is present
-                    if ((GameBoard[PlayerPositions[NotCurrent].Row + 1, PlayerPositions[NotCurrent].Column - 1] < 0 &&
-                         GameBoard[PlayerPositions[NotCurrent].Row + 1, PlayerPositions[NotCurrent].Column] < 0))
+                    //if move is diagonal
+                    if (Math.Abs(move.Row - PlayerPositions[Current].Row) != 2)
+                    {
+                        //if wall is present
+                        if ((GameBoard[PlayerPositions[NotCurrent].Row, PlayerPositions[NotCurrent].Column] > 0 ||
+                             GameBoard[PlayerPositions[NotCurrent].Row, PlayerPositions[NotCurrent].Column - 1] > 0))
+                        {
+                            isJump = true;
+                        }
+                    }
+                    //if move is not a diagonal jump
+                    else if (Math.Abs(move.Row - PlayerPositions[Current].Row) == 2)
                     {
                         isJump = true;
                     }
                 }
-                //if move is not a diagonal jump
-                else if (Math.Abs(move.Row - PlayerPositions[Current].Row) == 2)
+                //jumping backwards
+                else if (move.Row < PlayerPositions[Current].Row)
                 {
-                    isJump = true;
-                }
-            }
-            //jumping backwards
-            else if (move.Row < PlayerPositions[Current].Row)
-            {
-                //if move is diagonal
-                if (Math.Abs(move.Row - PlayerPositions[Current].Row) != 2)
-                {
-                    //if wall is present
-                    if ((GameBoard[PlayerPositions[NotCurrent].Row - 1, PlayerPositions[NotCurrent].Column + 1] < 0 &&
-                            GameBoard[PlayerPositions[NotCurrent].Row - 1, PlayerPositions[NotCurrent].Column] < 0))
+                    //if move is diagonal
+                    if (Math.Abs(move.Row - PlayerPositions[Current].Row) != 2)
+                    {
+                        //if wall is present
+                        if ((GameBoard[PlayerPositions[NotCurrent].Row - 1, PlayerPositions[NotCurrent].Column - 1] > 0 ||
+                                GameBoard[PlayerPositions[NotCurrent].Row - 1, PlayerPositions[NotCurrent].Column] > 0))
+                        {
+                            isJump = true;
+                        }
+                    }
+                    //if move is not a diagonal jump
+                    else if (Math.Abs(move.Row - PlayerPositions[Current].Row) == 2)
                     {
                         isJump = true;
                     }
                 }
-                //if move is not a diagonal jump
-                else if (Math.Abs(move.Row - PlayerPositions[Current].Row) == 2)
+                //jumping right
+                else if (move.Column > PlayerPositions[Current].Column)
                 {
-                    isJump = true;
-                }
-            }
-            //jumping right
-            else if (move.Column > PlayerPositions[Current].Column)
-            {
-                //if move is diagonal
-                if (Math.Abs(move.Row - PlayerPositions[Current].Row) != 2)
-                {
-                    //if wall is present
-                    if ((GameBoard[PlayerPositions[NotCurrent].Row, PlayerPositions[NotCurrent].Column + 1] > 0 &&
-                         GameBoard[PlayerPositions[NotCurrent].Row - 1, PlayerPositions[NotCurrent].Column + 1] > 0))
+                    //if move is diagonal
+                    if (Math.Abs(move.Row - PlayerPositions[Current].Row) != 2)
+                    {
+                        //if wall is present
+                        if ((GameBoard[PlayerPositions[NotCurrent].Row, PlayerPositions[NotCurrent].Column] < 0 ||
+                             GameBoard[PlayerPositions[NotCurrent].Row - 1, PlayerPositions[NotCurrent].Column] < 0))
+                        {
+                            isJump = true;
+                        }
+                    }
+                    //if move is not a diagonal jump
+                    else if (Math.Abs(move.Row - PlayerPositions[Current].Row) == 2)
                     {
                         isJump = true;
                     }
                 }
-                //if move is not a diagonal jump
-                else if (Math.Abs(move.Row - PlayerPositions[Current].Row) == 2)
+                //jumping left
+                else if (move.Column < PlayerPositions[Current].Column)
                 {
-                    isJump = true;
-                }
-            }
-            //jumping left
-            else if (move.Column < PlayerPositions[Current].Column)
-            {
-                //if move is diagonal
-                if (Math.Abs(move.Row - PlayerPositions[Current].Row) != 2)
-                {
-                    //if wall is present
-                    if ((GameBoard[PlayerPositions[NotCurrent].Row, PlayerPositions[NotCurrent].Column - 1] > 0 &&
-                         GameBoard[PlayerPositions[NotCurrent].Row - 1, PlayerPositions[NotCurrent].Column - 1] > 0))
+                    //if move is diagonal
+                    if (Math.Abs(move.Row - PlayerPositions[Current].Row) != 2)
+                    {
+                        //if wall is present
+                        if ((GameBoard[PlayerPositions[NotCurrent].Row - 1, PlayerPositions[NotCurrent].Column - 1] > 0 ||
+                             GameBoard[PlayerPositions[NotCurrent].Row - 1, PlayerPositions[NotCurrent].Column] > 0))
+                        {
+                            isJump = true;
+                        }
+                    }
+                    //if move is not a diagonal jump
+                    else if (Math.Abs(move.Row - PlayerPositions[Current].Row) == 2)
                     {
                         isJump = true;
                     }
-                }
-                //if move is not a diagonal jump
-                else if (Math.Abs(move.Row - PlayerPositions[Current].Row) == 2)
-                {
-                    isJump = true;
                 }
             }
         }
-        Debug.Log("isJump " + isJump);
         return isJump;
     }
 
@@ -352,13 +381,12 @@ public class Board
         //flip current player
         Current = (byte)Math.Abs(Current - 1);
         NotCurrent = (byte)Math.Abs(Current - 1);
+        Turns++;
     }
 
     //overloaded to deal with either representation of a move
     public void MakeMove(Move move)
     {
-        Debug.Log("Making move: " + move.Row + ", " + move.Column + ", ");
-
         if (move.Value == 0)
         {
             SetNewPlayerPosition(move);
@@ -370,6 +398,7 @@ public class Board
 
         Current = (byte)Math.Abs(Current - 1);
         NotCurrent = (byte)Math.Abs(Current - 1);
+        Turns++;
     }
 
     public bool CheckForEndGame()
@@ -392,11 +421,12 @@ public class Board
     }
     private void SetNewPlayerPosition(Move move)
     {
-        PlayerPositions[Current] = new Move(move);
+        PlayerPositions[Current] = move;
     }
 
     private void SetNewWall(Move move)
     {
         GameBoard[move.Row, move.Column] = move.Value;
+        Walls[Current]--;
     }
 }
