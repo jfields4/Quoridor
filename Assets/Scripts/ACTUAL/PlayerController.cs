@@ -555,7 +555,7 @@ public class PlayerController : MonoBehaviour
 
 
 
-    public bool MovePlayer(char col , int row)
+    public bool MovePlayer(char col, int row)
     {
 
         col = (col + "").ToUpper()[0];

@@ -10,6 +10,7 @@ public class GameCore : MonoBehaviour
     gameBoard board = new gameBoard();
 
     bool AIGame;
+
     gameBoard.Move LastMove;
 
     public GameCore(bool AIOption)
@@ -40,9 +41,9 @@ public class GameCore : MonoBehaviour
                 //    network.SendMove(move);
                 //}
 
-                //gameBoard.Move newMove = GetOpponentMove();
+                gameBoard.Move newMove = GetOpponentMove();
 
-                //board.MakeMove(newMove);
+                board.MakeMove(newMove);
             }
         }
 
@@ -65,7 +66,7 @@ public class GameCore : MonoBehaviour
 
         if (AIGame)
         {
-            //getAIMove(LastMove);
+            getAIMove(LastMove);
         }
         else
         {
