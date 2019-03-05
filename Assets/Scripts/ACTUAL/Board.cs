@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.Text;
-using UnityEngine;
 using System.Collections;
 using static WallValidation;
 public class Board
@@ -404,8 +403,8 @@ public class Board
     public bool CheckForEndGame()
     {
         bool end = false;
-        if (PlayerPositions[0].Row == 9 ||
-            PlayerPositions[0].Row == 1)
+        if (PlayerPositions[0].Row == 1 ||
+            PlayerPositions[1].Row == 9)
         {
             end = true;
         }
@@ -416,8 +415,30 @@ public class Board
     //private functions
     private bool Adjacent(Move to, Move start)
     {
-        return (Math.Abs(to.Row - start.Row) == 1 ^
-                Math.Abs(to.Column - start.Column) == 1);
+        bool adj = false;
+
+        //if rows are adjacent
+        if (Math.Abs(to.Row - start.Row) == 1)
+        {
+            // if in same column
+            if (to.Column == start.Column)
+            {
+                adj = true;
+            }
+        }
+        //if columns are adjacent
+        else if (Math.Abs(to.Column - start.Column) == 1)
+        {
+            //if in same row
+            if (to.Row == start.Row)
+            {
+                adj = true;
+            }
+        }
+
+        //return (Math.Abs(to.Row - start.Row) == 1 ^
+        //        Math.Abs(to.Column - start.Column) == 1);
+        return adj;
     }
     private void SetNewPlayerPosition(Move move)
     {
