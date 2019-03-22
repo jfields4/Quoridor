@@ -66,7 +66,7 @@ public class GameCore : MonoBehaviour
 
         if (AIGame)
         {
-            getAIMove(LastMove);
+            //getAIMove(LastMove);
         }
         else
         {

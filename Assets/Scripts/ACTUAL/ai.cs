@@ -756,6 +756,16 @@ public class AI
     // This does not exist
     private AI() { }
 
+    public struct Parameters
+    {
+        public double FWD;
+        public double LAT;
+        public double BKWD;
+        public double JUMP;
+        public double WIN;
+        public double WALL;
+        public double DIST;
+    }
     // Parameters for evaluation, play around to find best values
     private Parameters evParam;
 
