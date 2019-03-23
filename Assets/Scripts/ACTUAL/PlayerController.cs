@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviour
     public float jumpHeight;                        // The maximum height the player will reach when jumping.
 
     public gamecore Core = new gamecore(true);
+    private gameboard.Move opponentMove = new gameboard.Move(0,0,0);
 
     private bool moveNow;                           // Flag indicates whether the player should move now or not
     internal Player currentlySelectedPlayer;        // The player that is currently selected
@@ -151,12 +152,12 @@ public class PlayerController : MonoBehaviour
                         previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
 
                         gameboard.Move selectedMove = new gameboard.Move((byte)(10 - hitBlockPosition.row), (byte)(hitBlockPosition.col - 64), 0);
-
+                        
                         if (Core.ValidateMove(selectedMove))
                         {
                             if (MovePlayer(hitBlockPosition.col, hitBlockPosition.row))
                             {
-                                Core.ProcessMove(selectedMove);
+                                opponentMove = Core.ProcessMove(selectedMove);
                             }
 
                             else
@@ -201,7 +202,8 @@ public class PlayerController : MonoBehaviour
 
                 // Change player as the move has been completely made now
                 ToggleActivePlayer();
-
+                string temp = Core.ConvertMoveToString(opponentMove);
+                MovePlayer(temp[1], opponentMove.Row);
             }
         }
 

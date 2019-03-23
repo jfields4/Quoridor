@@ -10,7 +10,7 @@ public class GameCore : MonoBehaviour
 {
     gameBoard board = new gameBoard();
 
-    bool AIGame;
+    public bool AIGame;
     AIOpponent ComputerOpponent;
 
     gameBoard.Move LastMove;
@@ -39,30 +39,34 @@ public class GameCore : MonoBehaviour
         return board.ValidateMove(move);
     }
 
-    public bool ProcessMove(gameBoard.Move move)
+    public string ConvertMoveToString(gameBoard.Move move)
     {
-        bool result = false;
-        
+        return board.ConvertMoveToString(move);
+    }
+
+    public gameBoard.Move ProcessMove(gameBoard.Move move)
+    {
+        gameBoard.Move newMove = new gameBoard.Move(0, 0, 0);
+
         LastMove = new gameBoard.Move(move);
         if (!move.Equals(null))
         {
             if (ValidateMove(move))
             {
                 board.MakeMove(move);
-                result = true;
 
                 //if (!AIGame)
                 //{
                 //    network.SendMove(move);
                 //}
 
-                gameBoard.Move newMove = GetOpponentMove();
+                newMove = GetOpponentMove();
 
-                //board.MakeMove(newMove);
+                board.MakeMove(newMove);
             }
         }
 
-        return result;
+        return newMove;
     }
 
     public bool CheckForVictory()
@@ -81,7 +85,7 @@ public class GameCore : MonoBehaviour
 
         if (AIGame)
         {
-            //getAIMove(LastMove);
+            move = ComputerOpponent.GetMove(LastMove);
         }
         else
         {
