@@ -8,8 +8,6 @@ using System;
 
 public class PlayerController : MonoBehaviour
 {
-
-    gamecore core = new gamecore(true);
     public Player player1;                          // Reference to Player1 gameobject
     public Player player2;                          // Reference to player2 gameobject
     public float speed;                             // The speed with which the player will move to other blocks
@@ -20,9 +18,9 @@ public class PlayerController : MonoBehaviour
     public float timeToStayInAir;                   // The time the player will take to jump or the time it will stay in the air.
     [Range(50, 400)]
     public float jumpHeight;                        // The maximum height the player will reach when jumping.
-
-    public gamecore Core = new gamecore(true);
+    
     private gameboard.Move opponentMove = new gameboard.Move(0,0,0);
+    gamecore Core;
 
     private bool moveNow;                           // Flag indicates whether the player should move now or not
     internal Player currentlySelectedPlayer;        // The player that is currently selected
@@ -101,6 +99,7 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Core = gamecore.CreateInstance<gamecore>();
         currentlySelectedPlayer = player1;
         currentlyActivePlayer.text = "Active Player : " + $"<color=#00ff00ff>{currentlySelectedPlayer.playerType}</color>";
     }

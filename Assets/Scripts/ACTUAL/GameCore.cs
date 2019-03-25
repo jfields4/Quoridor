@@ -6,19 +6,23 @@ using System.Collections.Generic;
 using gameBoard = Board;
 using AIOpponent = AI;
 
-public class GameCore : MonoBehaviour
+public class GameCore : ScriptableObject
 {
-    gameBoard board = new gameBoard();
+    gameBoard board;
 
     public bool AIGame;
     AIOpponent ComputerOpponent;
 
-    gameBoard.Move LastMove;
+    gameBoard.Move LastMove = new gameBoard.Move(0, 0, 0);
 
-    public GameCore(bool AIOption)
+    public GameCore()
     {
-        AIGame = AIOption;
+        AIGame = true;
+    }
 
+    public void OnEnable()
+    {
+        board = gameBoard.CreateInstance<gameBoard>();
         if (AIGame)
         {
             AIOpponent.Parameters prms = new AIOpponent.Parameters();
@@ -30,7 +34,8 @@ public class GameCore : MonoBehaviour
             prms.WALL = 3;
             prms.DIST = 30;
 
-            ComputerOpponent = new AIOpponent(true, false, prms);
+            ComputerOpponent = AIOpponent.CreateInstance<AIOpponent>();
+            ComputerOpponent.Init(true, false, prms);
         }
     }
 
@@ -47,8 +52,8 @@ public class GameCore : MonoBehaviour
     public gameBoard.Move ProcessMove(gameBoard.Move move)
     {
         gameBoard.Move newMove = new gameBoard.Move(0, 0, 0);
-
         LastMove = new gameBoard.Move(move);
+        
         if (!move.Equals(null))
         {
             if (ValidateMove(move))

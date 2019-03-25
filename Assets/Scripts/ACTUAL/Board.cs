@@ -4,7 +4,8 @@ using System.Text;
 using System.Collections;
 using UnityEngine;
 using static WallValidation;
-public class Board
+
+public class Board : ScriptableObject
 {
     //move class
     public class Move
@@ -228,7 +229,6 @@ public class Board
         //if movement
         else
         {
-            Debug.Log("Is movement");
             //reference as if moving from smaller point to larger point
             if (moveSent < PlayerPositions[Current])
             {
@@ -245,14 +245,11 @@ public class Board
             }
             else if (moveSent != PlayerPositions[NotCurrent])
             {
-                Debug.Log("Is not jump");
                 if (Adjacent(moveSent, PlayerPositions[Current]))
                 {
-                    Debug.Log("Adjacent");
                     //if moving up or down
                     if (moveSent.Row != PlayerPositions[Current].Row)
                     {
-                        Debug.Log("Moving up/down");
                         if (GameBoard[move.Row, move.Column - 1] <= 0 &&
                             GameBoard[move.Row, move.Column] <= 0)
                         {
@@ -262,7 +259,6 @@ public class Board
                     //if moving left or right
                     else
                     {
-                        Debug.Log("Moving left/right");
                         if (GameBoard[move.Row - 1, move.Column] >= 0 &&
                             GameBoard[move.Row, move.Column] >= 0)
                         {
@@ -443,27 +439,21 @@ public class Board
     private bool Adjacent(Move to, Move start)
     {
         bool adj = false;
-        Debug.Log("To: " + to.Row + " " + to.Column);
-        Debug.Log("Start: " + start.Row + " " + start.Column);
         //if rows are adjacent
         if (Math.Abs(to.Row - start.Row) == 1)
         {
-            Debug.Log("Rows 1 ");
             // if in same column
             if (to.Column == start.Column)
             {
-                Debug.Log("Cols 1");
                 adj = true;
             }
         }
         //if columns are adjacent
         else if(Math.Abs(to.Column - start.Column) == 1)
         {
-            Debug.Log("Cols 2");
             //if in same row
             if (to.Row == start.Row)
             {
-                Debug.Log("Rows 2");
                 adj = true;
             }
         }

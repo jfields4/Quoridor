@@ -11,7 +11,7 @@ using System.Diagnostics;
 using static Board;
 using static Board.Move;
 
-public class AI
+public class AI: ScriptableObject
 {
     public struct State
     {
@@ -68,6 +68,7 @@ public class AI
         {
             me = 0;
         }
+
         gameBoard.MakeMove(move);
         //if (gameBoard.CheckForEndGame())
         //{
@@ -735,9 +736,7 @@ public class AI
     }
 
     public AI(bool lev, bool first, Parameters param) {
-        level = lev;
-        firstPlayer = first;
-        gameBoard = new Board();
+        
         gameState.walls = new byte[2];
         
         gameState.walls[0] = 10;
@@ -749,8 +748,18 @@ public class AI
             gameState.previous[i] = new Move(0, 0, 0);
         }
         gameState.oldest = 0;
-		
-		evParam = param;		
+    }
+
+    public void OnEnable()
+    {
+        gameBoard = Board.CreateInstance<Board>();
+    }
+
+    public void Init(bool lev, bool first, Parameters param)
+    {
+        level = lev;
+        firstPlayer = first;
+        evParam = param;
     }
 
     // This does not exist
@@ -779,8 +788,8 @@ public class AI
     private Board gameBoard;
     private State gameState;
     private readonly byte[] goals = { 1,9 };
-    private readonly bool level;
-    private readonly bool firstPlayer;
+    private bool level;
+    private bool firstPlayer;
 }
 
 
