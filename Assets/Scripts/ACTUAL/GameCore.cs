@@ -49,11 +49,10 @@ public class GameCore : ScriptableObject
         return board.ConvertMoveToString(move);
     }
 
-    public gameBoard.Move ProcessMove(gameBoard.Move move)
+    public void ProcessMove(gameBoard.Move move)
     {
-        gameBoard.Move newMove = new gameBoard.Move(0, 0, 0);
         LastMove = new gameBoard.Move(move);
-        
+
         if (!move.Equals(null))
         {
             if (ValidateMove(move))
@@ -64,13 +63,14 @@ public class GameCore : ScriptableObject
                 //{
                 //    network.SendMove(move);
                 //}
-
-                newMove = GetOpponentMove();
-
-                board.MakeMove(newMove);
             }
         }
+    }
 
+    public gameBoard.Move GetMove()
+    {
+        gameBoard.Move newMove = new gameBoard.Move(GetOpponentMove());
+        
         return newMove;
     }
 
@@ -96,7 +96,6 @@ public class GameCore : ScriptableObject
         {
             //network.GetMove();
         }
-
         return move;
     }
 }

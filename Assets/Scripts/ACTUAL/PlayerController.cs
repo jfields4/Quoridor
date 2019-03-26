@@ -21,11 +21,11 @@ public class PlayerController : MonoBehaviour
     
     private gameboard.Move opponentMove = new gameboard.Move(0,0,0);
     gamecore Core;
-
     private bool moveNow;                           // Flag indicates whether the player should move now or not
     internal Player currentlySelectedPlayer;        // The player that is currently selected
     internal Players lastMoveBy;                    // The player that made the last move
     private bool isPlayer1Selected;                 // Shows which player is selected corrently
+    private bool weArePlayer1 = true;
     private Vector3 playerNextDestination;          // The interpolation end point
     private bool allowToggle = true;                // Flag indicates whether to allow switching between players
     private bool shouldJump;                        // Flag indicates whether the player should jump or not
@@ -149,14 +149,13 @@ public class PlayerController : MonoBehaviour
                     {
 
                         previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
-
                         gameboard.Move selectedMove = new gameboard.Move((byte)(10 - hitBlockPosition.row), (byte)(hitBlockPosition.col - 64), 0);
-                        
+
                         if (Core.ValidateMove(selectedMove))
                         {
                             if (MovePlayer(hitBlockPosition.col, hitBlockPosition.row))
                             {
-                                opponentMove = Core.ProcessMove(selectedMove);
+                               
                             }
 
                             else
@@ -201,8 +200,16 @@ public class PlayerController : MonoBehaviour
 
                 // Change player as the move has been completely made now
                 ToggleActivePlayer();
-                string temp = Core.ConvertMoveToString(opponentMove);
-                MovePlayer(temp[1], opponentMove.Row);
+                if((weArePlayer1 != isPlayer1Selected) && moveNow == false)
+                {
+                    opponentMove = Core.GetMove();
+                    opponentMove.Row = (byte)(10 - opponentMove.Row);
+                    string stringMove = Core.ConvertMoveToString(opponentMove);
+                    string upper = stringMove.ToUpper();
+                    char temp = upper[0];
+
+                    MovePlayer(temp, opponentMove.Row);
+                }
             }
         }
 
@@ -567,7 +574,10 @@ public class PlayerController : MonoBehaviour
 
     public bool MovePlayer(char col, int row)
     {
-
+        Debug.Log("Recieved " + row + " " + col);
+        gameboard.Move selectedMove = new gameboard.Move((byte)(10 - row), (byte)(col - 64), 0);
+        Debug.Log(selectedMove.Row + " " + selectedMove.Column);
+        Core.ProcessMove(selectedMove);
         col = (col + "").ToUpper()[0];
 
         MoveTuple playerPos       = GetPlayerBoardPosition(currentlySelectedPlayer);

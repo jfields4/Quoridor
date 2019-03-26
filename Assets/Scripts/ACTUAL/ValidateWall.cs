@@ -1,43 +1,44 @@
 ﻿using System.Collections.Generic;
-using static Board;
+using static AI.Board;
+using static Board.Move;
 
 public class WallValidation
 {
     //state and node are used to track board state
     public struct State
     {
-        public Move position1;
-        public Move position2;
+        public Board.Move position1;
+        public Board.Move position2;
 
-        public State(Move first, Move second)
+        public State(Board.Move first, Board.Move second)
         {
-            position1 = new Move(first);
-            position2 = new Move(second);
+            position1 = new Board.Move(first);
+            position2 = new Board.Move(second);
         }
     }
     public struct Node
     {
-        public Node(Board currentboard, Move currentmove, State state)
+        public Node(AI.Board currentboard, Board.Move currentmove, State state)
         {
-            gameboard = new Board(currentboard);
-            mv = new Move(currentmove);
+            gameboard = new AI.Board(currentboard);
+            mv = new Board.Move(currentmove);
             currentstate = state;
         }
 
         public State currentstate;
-        public readonly Board gameboard;
-        public readonly Move mv;
+        public readonly AI.Board gameboard;
+        public readonly Board.Move mv;
     }
 
     //this is necessary for the HashSet to not put duplicates in the set
-    public class MoveComparer : EqualityComparer<Move>
+    public class MoveComparer : EqualityComparer<Board.Move>
     {
-        public override bool Equals(Move x, Move y)
+        public override bool Equals(Board.Move x, Board.Move y)
         {
             return x == y;
         }
 
-        public override int GetHashCode(Move obj)
+        public override int GetHashCode(Board.Move obj)
         {
             int hash = obj.Row ^ obj.Column ^ obj.Value;
             return hash.GetHashCode();
@@ -45,14 +46,14 @@ public class WallValidation
     }
 
     //this set is used to make sure we don't back track and get infinite recursion
-    HashSet<Move> PlacesBeen;
+    HashSet<Board.Move> PlacesBeen;
 
     public WallValidation()
     {
-        PlacesBeen = new HashSet<Move>(new MoveComparer());
+        PlacesBeen = new HashSet<Board.Move>(new MoveComparer());
     }
 
-    public bool Validate(Board boardSent, Move placement)
+    public bool Validate(AI.Board boardSent, Board.Move placement)
     {
         if (placement.Row < 1 || placement.Column < 1 || placement.Row >= 9 || placement.Column >= 9)
         {
@@ -100,10 +101,10 @@ public class WallValidation
     //depth-first recursive search
     private bool PathToGoal(Node node, int playerNumber)
     {
-        Move moveRight;
-        Move moveLeft;
-        Move moveDown;
-        Move moveUp;
+        Board.Move moveRight;
+        Board.Move moveLeft;
+        Board.Move moveDown;
+        Board.Move moveUp;
 
         bool result = false;
 
@@ -112,10 +113,10 @@ public class WallValidation
             PlacesBeen.Add(node.gameboard.PlayerPositions[playerNumber]);
         }
 
-        moveUp = new Move((byte)(node.gameboard.PlayerPositions[playerNumber].Row - 1), node.gameboard.PlayerPositions[playerNumber].Column, 0);
-        moveDown = new Move((byte)(node.gameboard.PlayerPositions[playerNumber].Row + 1), node.gameboard.PlayerPositions[playerNumber].Column, 0);
-        moveLeft = new Move(node.gameboard.PlayerPositions[playerNumber].Row, (byte)(node.gameboard.PlayerPositions[playerNumber].Column - 1), 0);
-        moveRight = new Move(node.gameboard.PlayerPositions[playerNumber].Row, (byte)(node.gameboard.PlayerPositions[playerNumber].Column + 1), 0);
+        moveUp = new Board.Move((byte)(node.gameboard.PlayerPositions[playerNumber].Row - 1), node.gameboard.PlayerPositions[playerNumber].Column, 0);
+        moveDown = new Board.Move((byte)(node.gameboard.PlayerPositions[playerNumber].Row + 1), node.gameboard.PlayerPositions[playerNumber].Column, 0);
+        moveLeft = new Board.Move(node.gameboard.PlayerPositions[playerNumber].Row, (byte)(node.gameboard.PlayerPositions[playerNumber].Column - 1), 0);
+        moveRight = new Board.Move(node.gameboard.PlayerPositions[playerNumber].Row, (byte)(node.gameboard.PlayerPositions[playerNumber].Column + 1), 0);
 
 
         //if current player can reach other side, wall is legal
