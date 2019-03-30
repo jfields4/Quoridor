@@ -44,6 +44,11 @@ public class GameCore : ScriptableObject
         return board.ValidateMove(move);
     }
 
+    public bool MoveIsJump(gameBoard.Move move)
+    {
+        return board.MoveIsJump(move);
+    }
+
     public string ConvertMoveToString(gameBoard.Move move)
     {
         return board.ConvertMoveToString(move);

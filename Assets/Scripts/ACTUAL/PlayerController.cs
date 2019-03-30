@@ -153,15 +153,14 @@ public class PlayerController : MonoBehaviour
 
                         if (Core.ValidateMove(selectedMove))
                         {
-                            if (MovePlayer(hitBlockPosition.col, hitBlockPosition.row))
-                            {
-                               
-                            }
-
-                            else
+                            if(Core.MoveIsJump(selectedMove))
                             {
                                 // might be able to jump
                                 TryJump(hitBlockPosition);
+                            }
+                            else
+                            {
+                                MovePlayer(hitBlockPosition.col, hitBlockPosition.row);
                             }
                         }
                         
@@ -203,12 +202,41 @@ public class PlayerController : MonoBehaviour
                 if((weArePlayer1 != isPlayer1Selected) && moveNow == false)
                 {
                     opponentMove = Core.GetMove();
-                    opponentMove.Row = (byte)(10 - opponentMove.Row);
+                    gameboard.Move adjusted = new gameboard.Move();
+
+                    Debug.Log("Opponent selected: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
+                    adjusted.Row = (byte)(10 - opponentMove.Row);
                     string stringMove = Core.ConvertMoveToString(opponentMove);
                     string upper = stringMove.ToUpper();
                     char temp = upper[0];
 
-                    MovePlayer(temp, opponentMove.Row);
+                    //This is for debugging purposes to test jumping until wall placement is online
+                    if(opponentMove.Row == 7 && opponentMove.Column == 6)
+                    {
+                        opponentMove.Row = 6;
+                        opponentMove.Column = 5;
+                        opponentMove.Value = 0;
+                    }
+
+                    if(opponentMove.Value == 0)
+                    {
+                        if (Core.MoveIsJump(opponentMove))
+                        {
+                            Debug.Log("Move is Jump");
+                            MoveTuple jumpTarget = new MoveTuple();
+                            jumpTarget.row = opponentMove.Row;
+                            jumpTarget.col = temp;
+                            TryJump(jumpTarget);
+                        }
+                        else
+                        {
+                            MovePlayer(temp, adjusted.Row);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("Wall Placement");
+                    }
                 }
             }
         }
@@ -574,9 +602,7 @@ public class PlayerController : MonoBehaviour
 
     public bool MovePlayer(char col, int row)
     {
-        Debug.Log("Recieved " + row + " " + col);
         gameboard.Move selectedMove = new gameboard.Move((byte)(10 - row), (byte)(col - 64), 0);
-        Debug.Log(selectedMove.Row + " " + selectedMove.Column);
         Core.ProcessMove(selectedMove);
         col = (col + "").ToUpper()[0];
 
