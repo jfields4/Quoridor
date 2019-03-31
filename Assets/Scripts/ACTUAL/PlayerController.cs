@@ -204,7 +204,6 @@ public class PlayerController : MonoBehaviour
                     opponentMove = Core.GetMove();
                     gameboard.Move adjusted = new gameboard.Move();
 
-                    Debug.Log("Opponent selected: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
                     adjusted.Row = (byte)(10 - opponentMove.Row);
                     string stringMove = Core.ConvertMoveToString(opponentMove);
                     string upper = stringMove.ToUpper();
@@ -217,6 +216,7 @@ public class PlayerController : MonoBehaviour
                         opponentMove.Column = 5;
                         opponentMove.Value = 0;
                     }
+                    Debug.Log("Opponent selected: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
 
                     if(opponentMove.Value == 0)
                     {
@@ -226,6 +226,7 @@ public class PlayerController : MonoBehaviour
                             MoveTuple jumpTarget = new MoveTuple();
                             jumpTarget.row = opponentMove.Row;
                             jumpTarget.col = temp;
+                            jumpTarget.indexInGrid = (byte)GetIndexFromRowCol(jumpTarget.col, (int)jumpTarget.row);
                             TryJump(jumpTarget);
                         }
                         else
@@ -654,7 +655,6 @@ public class PlayerController : MonoBehaviour
 
     public bool TryJump(MoveTuple jumpTo)
     {
-
         MoveTuple jumpablePos = GetJumpablePosition();
         BoardSetup.Block targetBlock = BoardSetup.instance.gridArray[jumpTo.indexInGrid - 1];
 
