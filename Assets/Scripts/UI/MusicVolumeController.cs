@@ -2,28 +2,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
 public class MusicVolumeController : MonoBehaviour
 {
-    public GameObject music;
+    public MusicController music;
     public AudioSource audio;
     public Slider slider;
 
     public void Awake()
     {
-        music = GameObject.Find("Music");
-        Debug.Log("Music check: " + music);
-
+        music = GameObject.FindObjectOfType<MusicController>();
+        Debug.Log(music);
         audio = music.GetComponent<AudioSource>();
-        Debug.Log("Audio check: " + audio);
+        Debug.Log(audio);
+        Debug.Log(slider);
 
-        slider = GetComponent<Slider>();
-        Debug.Log("Slider check: " + slider);
+        slider.onValueChanged.AddListener(delegate { ValueChangeCheck(); });
     }
 
-    public void OnValueChanged()
+    public void ValueChangeCheck()
     {
+        Debug.Log("Slider value: " + slider.value);
+        Debug.Log("Original volume: " + slider.value);
         audio.volume = slider.value;
-        Debug.Log(slider.value);
+        Debug.Log("New volume: " + audio.volume);
     }
 }
