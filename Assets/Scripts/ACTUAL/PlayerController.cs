@@ -5,7 +5,7 @@ using gamecore = GameCore;
 using gameboard = Board;
 using UnityEngine.UI;
 using System;
-
+using UnityEngine.SceneManagement;
 public class PlayerController : MonoBehaviour
 {
     public Player player1;                          // Reference to Player1 gameobject
@@ -258,7 +258,6 @@ public class PlayerController : MonoBehaviour
     
 
         }
-        
     }
 
 
@@ -605,6 +604,17 @@ public class PlayerController : MonoBehaviour
     {
         gameboard.Move selectedMove = new gameboard.Move((byte)(10 - row), (byte)(col - 64), 0);
         Core.ProcessMove(selectedMove);
+        if (Core.CheckForVictory())
+        {
+            if(currentlySelectedPlayer == player1)
+            {
+                SceneManager.LoadScene(7);
+            }
+            else
+            {
+                SceneManager.LoadScene(8);
+            }
+        }
         col = (col + "").ToUpper()[0];
 
         MoveTuple playerPos       = GetPlayerBoardPosition(currentlySelectedPlayer);
@@ -655,6 +665,19 @@ public class PlayerController : MonoBehaviour
 
     public bool TryJump(MoveTuple jumpTo)
     {
+        gameboard.Move selectedMove = new gameboard.Move((byte)(10 - jumpTo.row), (byte)(jumpTo.col - 64), 0);
+        Core.ProcessMove(selectedMove);
+        if (Core.CheckForVictory())
+        {
+            if (currentlySelectedPlayer == player1)
+            {
+                SceneManager.LoadScene(7);
+            }
+            else
+            {
+                SceneManager.LoadScene(8);
+            }
+        }
         MoveTuple jumpablePos = GetJumpablePosition();
         BoardSetup.Block targetBlock = BoardSetup.instance.gridArray[jumpTo.indexInGrid - 1];
 
