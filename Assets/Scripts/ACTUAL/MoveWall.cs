@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using gameboard = Board;
 public class MoveWall : MonoBehaviour
 {
 
@@ -9,8 +9,9 @@ public class MoveWall : MonoBehaviour
     [Tooltip("Set the speed with which the walls can be moved")]
     public float moveSpeed;
     public Transform selectedWall { private set; get; }      // The wall to move
-
-
+	NewLogic newLogic;
+	public byte row;
+	public char col;
 
     internal static bool isWallMoving { private set; get; }  // Flag indicates whether the wall is being moved or not
 
@@ -29,13 +30,81 @@ public class MoveWall : MonoBehaviour
 
     // Start is called before the first frame update
     void Start()
-    {
+	{
+		newLogic = GameObject.Find ("NewLogic").GetComponent<NewLogic> ();
         playerController = GetComponent<PlayerController>();
 
     }
 
     // Update is called once per frame
-    void Update()
+  
+
+	public Transform MoveFinalWall(Transform wallGameObject){
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		RaycastHit hitInfo;
+
+
+
+		if (newLogic.playerMove==true)
+		{
+			Debug.Log (wallGameObject.transform.position);
+			if(allowMovement == true) { allowMovement = false; isWallMoving = false; }
+
+			// else if (Physics.Raycast(ray, out hitInfo, Mathf.Infinity, LayerMasks.instance.wallLayerOnly))
+			//	else if (wallGameObject.gameObject.layer==LayerMasks.instance.wallLayerOnly)
+
+			//	{
+
+			// The current player should only move walls that are allowed for him
+
+			string allowableWallsType = playerController.currentlySelectedPlayer.allowableWallToMove.ToString();
+			Debug.Log (allowableWallsType);
+			//   if (!hitInfo.transform.tag.Equals(allowableWallsType)) { return; }
+				if(!wallGameObject.transform.tag.Equals(allowableWallsType)){return null;}
+			//   Debug.Log("Selected wall name  " + selectedWall.name);
+
+			BoardSetup.instance.EnableDisablePlacementArrows(true);
+
+			allowMovement = true;
+			isWallMoving = true;
+
+			//selectedWall = hitInfo.transform;
+			selectedWall =	wallGameObject;
+
+			Debug.Log("Selected wall name  " + selectedWall.name);
+			Debug.Log("Selected wall Postion  " + selectedWall.position);
+			gameboard.Move selectedMove = new gameboard.Move((byte)(10 - row), (byte)(col - 64), 0);
+			Debug.Log(selectedMove.Row + " " + selectedMove.Column);
+
+
+			//	Debug.Log("Hit wall rotation is    " +hitInfo.transform.localEulerAngles);
+			Debug.Log("Hit wall rotation is    " +wallGameObject.transform.localEulerAngles);
+			int yAngle = (int)wallGameObject.transform.localEulerAngles.y;
+
+			//}
+
+
+
+
+
+		}
+		return wallGameObject;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	void Update()
     {
 
 
@@ -45,7 +114,8 @@ public class MoveWall : MonoBehaviour
 
 
         if (Input.GetMouseButtonUp(0))
-        {
+		{
+			
 
             if(allowMovement == true) { allowMovement = false; isWallMoving = false; }
 
@@ -59,6 +129,7 @@ public class MoveWall : MonoBehaviour
 
 
                 BoardSetup.instance.EnableDisablePlacementArrows(true);
+
 
                 allowMovement = true;
                 isWallMoving = true;

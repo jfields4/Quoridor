@@ -24,8 +24,9 @@ public class CollisionInfo : MonoBehaviour
         // Hit the ground
         if(other.gameObject.layer == LayerMasks.instance.blocksLayerNumber)
         {
-            playerController.StopJump(playerType);
+           playerController.StopJump(playerType);
         }
-    }
+    
+	}
 
 }

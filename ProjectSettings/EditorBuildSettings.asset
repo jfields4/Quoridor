@@ -15,18 +15,18 @@ EditorBuildSettings:
     path: Assets/Scenes/UI/MainMenu.unity
     guid: 5df636b7731d549a9a2db6831aec0f49
   - enabled: 1
-    path: Assets/Scenes/UI/Play_Game.unity
-    guid: 88cb328ceb329475ca7a97aee4db568e
-  - enabled: 1
     path: Assets/Scenes/UI/Game_Options.unity
     guid: 785128e2b72874903a0255905cdef85d
+  - enabled: 1
+    path: Assets/Scenes/UI/Play_Game.unity
+    guid: 88cb328ceb329475ca7a97aee4db568e
   - enabled: 1
     path: Assets/Scenes/Game.unity
     guid: c1e081ef70a08a74b9b73e617e8110ea
   - enabled: 1
-    path: Assets/Scenes/UI/How_to_play.unity
-    guid: 24f4818ad08ef4c6bb1e9cfda28b076b
-  - enabled: 1
     path: Assets/Scenes/UI/Options.unity
     guid: d4ead8ce41947433fb664be85c762e38
+  - enabled: 1
+    path: Assets/Scenes/UI/How_to_play.unity
+    guid: 24f4818ad08ef4c6bb1e9cfda28b076b
   m_configObjects: {}

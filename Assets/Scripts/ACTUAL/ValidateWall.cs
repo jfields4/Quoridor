@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using static AI.Board;
 using static Board.Move;
-
-public class WallValidation
+using System.Collections;
+using UnityEngine;
+public class WallValidation 
 {
     //state and node are used to track board state
     public struct State
     {
+		
         public Board.Move position1;
         public Board.Move position2;
 
@@ -14,12 +16,15 @@ public class WallValidation
         {
             position1 = new Board.Move(first);
             position2 = new Board.Move(second);
-        }
+      
+		}
     }
     public struct Node
     {
+		
         public Node(AI.Board currentboard, Board.Move currentmove, State state)
         {
+			
             gameboard = new AI.Board(currentboard);
             mv = new Board.Move(currentmove);
             currentstate = state;
@@ -55,14 +60,18 @@ public class WallValidation
 
     public bool Validate(AI.Board boardSent, Board.Move placement)
     {
+		Debug.Log ("1"+placement.Row + placement.Column);
+
         if (placement.Row < 1 || placement.Column < 1 || placement.Row >= 9 || placement.Column >= 9)
         {
+			Debug.Log ("1"+placement.Row + placement.Column);
             return false;
         }
 
         //if the space is occupied
         if (boardSent.GameBoard[placement.Row, placement.Column] != 0)
         {
+			Debug.Log ("1"+placement.Row + placement.Column);
             return false;
         }
         //if wall is horizontal, check left & right for horizontal walls
@@ -70,6 +79,7 @@ public class WallValidation
             (boardSent.GameBoard[placement.Row, placement.Column - 1] == 1 ||
             boardSent.GameBoard[placement.Row, placement.Column + 1] == 1))
         {
+			Debug.Log ("1"+placement.Row + placement.Column);
             return false;
         }
         //if wall is vertical, check up & down for vertical walls
@@ -77,6 +87,7 @@ public class WallValidation
             (boardSent.GameBoard[placement.Row - 1, placement.Column] == -1 ||
             boardSent.GameBoard[placement.Row + 1, placement.Column] == -1))
         {
+			Debug.Log ("1"+placement.Row + placement.Column);
             return false;
         }
 

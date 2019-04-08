@@ -114,13 +114,13 @@ public class PlacementObject : MonoBehaviour
 
     private void OnMouseExit()
     {
-        //Debug.Log("Stop perchai on  " + transform.parent.name);
+        Debug.Log("Stop perchai on  " + transform.parent.name);
 
         isFirstMouseOver = true;
         moveWallScript.selectedWall.GetComponent<BoxCollider>().enabled = true;
         moveWallScript.selectedWall.position    = wallOriginalPosition;
         moveWallScript.selectedWall.eulerAngles = wallOriginalRotation;
-
+		Debug.Log("Stop perchai on  " + moveWallScript.selectedWall.position);
     }
 
 
@@ -218,17 +218,20 @@ public class PlacementObject : MonoBehaviour
         {
             Vector3 previousAngles = moveWallScript.selectedWall.eulerAngles;
             moveWallScript.selectedWall.eulerAngles = new Vector3(previousAngles.x, 90, previousAngles.z);
-        }
+			Debug.LogWarning(moveWallScript.selectedWall.position);
+		}
 
         else if (direction == PlacementDirection.vertical)
         {
             Vector3 previousAngles = moveWallScript.selectedWall.eulerAngles;
             moveWallScript.selectedWall.eulerAngles = new Vector3(previousAngles.x, 0, previousAngles.z);
-        }
+			Debug.LogWarning(moveWallScript.selectedWall.position);
+		}
 
         else if (direction == PlacementDirection.incorrectlyOriented)
         {
             moveWallScript.selectedWall.position = previousPosition;
+			Debug.LogWarning(moveWallScript.selectedWall.position);
             Debug.LogWarning($"The placement arrow:  \"{gameObject.name}\" parented to: \"{transform.parent.name}\" is incorrectly oriented.The wall \"{moveWallScript.selectedWall.name}\" won't be moved");
         }    
 

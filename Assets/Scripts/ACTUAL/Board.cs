@@ -308,6 +308,7 @@ public class Board : ScriptableObject
 
         Walls[0] = otherBoard.Walls[0];
         Walls[1] = otherBoard.Walls[1];
+		Debug.Log (Walls [0]);
     }
 
     //public functions
@@ -321,6 +322,7 @@ public class Board : ScriptableObject
             move.Row = (byte)(10 - int.Parse(moveSent[1].ToString()));
             move.Column = (byte)(moveSent[0] - 96);
             move.Value = 0;
+			Debug.Log (move.Row);
         }
         else
         {
@@ -615,7 +617,6 @@ public class Board : ScriptableObject
         return end;
     }
 
-    //private functions
     private bool Adjacent(Move to, Move start)
     {
         bool adj = false;

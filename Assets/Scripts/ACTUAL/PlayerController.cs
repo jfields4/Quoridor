@@ -5,12 +5,14 @@ using gamecore = GameCore;
 using gameboard = Board;
 using UnityEngine.UI;
 using System;
-using UnityEngine.SceneManagement;
+
 public class PlayerController : MonoBehaviour
 {
     public Player player1;                          // Reference to Player1 gameobject
     public Player player2;                          // Reference to player2 gameobject
-    public float speed;                             // The speed with which the player will move to other blocks
+	public GameObject Togglimage;
+	public Sprite []sprite;
+	public float speed;                             // The speed with which the player will move to other blocks
     [HideInInspector]
     public Vector3 previousPlayerPos;               // The previous position of the player before moving to this next block
     public Text currentlyActivePlayer;              // The UI text that shows the current active player
@@ -35,7 +37,7 @@ public class PlayerController : MonoBehaviour
 
 
     public enum Players
-    {
+    { 
        Player1,
        Player2
     }
@@ -62,6 +64,7 @@ public class PlayerController : MonoBehaviour
 
     public class MoveTuple : IEquatable<MoveTuple>
     {
+		
         public byte row;
         public char col;
         public byte indexInGrid;
@@ -99,10 +102,12 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+		
         Core = gamecore.CreateInstance<gamecore>();
         currentlySelectedPlayer = player1;
-        currentlyActivePlayer.text = "Active Player : " + $"<color=#00ff00ff>{currentlySelectedPlayer.playerType}</color>";
-    }
+        //currentlyActivePlayer.text = "Active Player : " + $"<color=#00ff00ff>{currentlySelectedPlayer.playerType}</color>";
+		currentlyActivePlayer.text =  currentlySelectedPlayer.playerType.ToString();
+	}
 
     // Update is called once per frame
     void Update()
@@ -153,14 +158,15 @@ public class PlayerController : MonoBehaviour
 
                         if (Core.ValidateMove(selectedMove))
                         {
-                            if(Core.MoveIsJump(selectedMove))
+                            if (MovePlayer(hitBlockPosition.col, hitBlockPosition.row))
+                            {
+                               
+                            }
+
+                            else
                             {
                                 // might be able to jump
                                 TryJump(hitBlockPosition);
-                            }
-                            else
-                            {
-                                MovePlayer(hitBlockPosition.col, hitBlockPosition.row);
                             }
                         }
                         
@@ -202,42 +208,12 @@ public class PlayerController : MonoBehaviour
                 if((weArePlayer1 != isPlayer1Selected) && moveNow == false)
                 {
                     opponentMove = Core.GetMove();
-                    gameboard.Move adjusted = new gameboard.Move();
-
-                    adjusted.Row = (byte)(10 - opponentMove.Row);
+                    opponentMove.Row = (byte)(10 - opponentMove.Row);
                     string stringMove = Core.ConvertMoveToString(opponentMove);
                     string upper = stringMove.ToUpper();
                     char temp = upper[0];
 
-                    //This is for debugging purposes to test jumping until wall placement is online
-                    if(opponentMove.Row == 7 && opponentMove.Column == 6)
-                    {
-                        opponentMove.Row = 6;
-                        opponentMove.Column = 5;
-                        opponentMove.Value = 0;
-                    }
-                    Debug.Log("Opponent selected: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
-
-                    if(opponentMove.Value == 0)
-                    {
-                        if (Core.MoveIsJump(opponentMove))
-                        {
-                            Debug.Log("Move is Jump");
-                            MoveTuple jumpTarget = new MoveTuple();
-                            jumpTarget.row = opponentMove.Row;
-                            jumpTarget.col = temp;
-                            jumpTarget.indexInGrid = (byte)GetIndexFromRowCol(jumpTarget.col, (int)jumpTarget.row);
-                            TryJump(jumpTarget);
-                        }
-                        else
-                        {
-                            MovePlayer(temp, adjusted.Row);
-                        }
-                    }
-                    else
-                    {
-                        Debug.Log("Wall Placement");
-                    }
+                    MovePlayer(temp, opponentMove.Row);
                 }
             }
         }
@@ -258,6 +234,7 @@ public class PlayerController : MonoBehaviour
     
 
         }
+        
     }
 
 
@@ -267,8 +244,9 @@ public class PlayerController : MonoBehaviour
     {
         if(selected)
         {
-            isPlayer1Selected = true; currentlySelectedPlayer = player1;
-            currentlyActivePlayer.text = "Active Player : " + $"<color=#00ff00ff>{currentlySelectedPlayer.playerType}</color>";
+			Togglimage.gameObject.GetComponent<Image> ().sprite = sprite [0];
+			isPlayer1Selected = true; currentlySelectedPlayer = player1;
+			currentlyActivePlayer.text = currentlySelectedPlayer.playerType.ToString();
         }
 
     }
@@ -277,8 +255,9 @@ public class PlayerController : MonoBehaviour
     {
         if (selected)
         {
-            isPlayer1Selected = false; currentlySelectedPlayer = player2;
-            currentlyActivePlayer.text = "Active Player : " + $"<color=#00ff00ff>{currentlySelectedPlayer.playerType}</color>";
+			Togglimage.gameObject.GetComponent<Image> ().sprite = sprite [0];
+			isPlayer1Selected = false; currentlySelectedPlayer = player2;
+			currentlyActivePlayer.text = currentlySelectedPlayer.playerType.ToString();
         }
     }
 
@@ -602,19 +581,10 @@ public class PlayerController : MonoBehaviour
 
     public bool MovePlayer(char col, int row)
     {
+        Debug.Log("Recieved " + row + " " + col);
         gameboard.Move selectedMove = new gameboard.Move((byte)(10 - row), (byte)(col - 64), 0);
+        Debug.Log(selectedMove.Row + " " + selectedMove.Column);
         Core.ProcessMove(selectedMove);
-        if (Core.CheckForVictory())
-        {
-            if(currentlySelectedPlayer == player1)
-            {
-                SceneManager.LoadScene(7);
-            }
-            else
-            {
-                SceneManager.LoadScene(8);
-            }
-        }
         col = (col + "").ToUpper()[0];
 
         MoveTuple playerPos       = GetPlayerBoardPosition(currentlySelectedPlayer);
@@ -665,19 +635,7 @@ public class PlayerController : MonoBehaviour
 
     public bool TryJump(MoveTuple jumpTo)
     {
-        gameboard.Move selectedMove = new gameboard.Move((byte)(10 - jumpTo.row), (byte)(jumpTo.col - 64), 0);
-        Core.ProcessMove(selectedMove);
-        if (Core.CheckForVictory())
-        {
-            if (currentlySelectedPlayer == player1)
-            {
-                SceneManager.LoadScene(7);
-            }
-            else
-            {
-                SceneManager.LoadScene(8);
-            }
-        }
+
         MoveTuple jumpablePos = GetJumpablePosition();
         BoardSetup.Block targetBlock = BoardSetup.instance.gridArray[jumpTo.indexInGrid - 1];
 
