@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviour
     public float jumpHeight;                        // The maximum height the player will reach when jumping.
     
     private gameboard.Move opponentMove = new gameboard.Move(0,0,0);
+    public LoadEndScreens endScreens;
     gamecore Core;
     private bool moveNow;                           // Flag indicates whether the player should move now or not
     internal Player currentlySelectedPlayer;        // The player that is currently selected
@@ -102,7 +103,6 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-		
         Core = gamecore.CreateInstance<gamecore>();
         currentlySelectedPlayer = player1;
         //currentlyActivePlayer.text = "Active Player : " + $"<color=#00ff00ff>{currentlySelectedPlayer.playerType}</color>";
@@ -562,6 +562,18 @@ public class PlayerController : MonoBehaviour
 
     public void ToggleActivePlayer()
     {
+        if (Core.CheckForVictory())
+        {
+            if (currentlySelectedPlayer.GetHashCode().Equals(player1.GetHashCode()) && weArePlayer1)
+            {
+                endScreens.ShowWinScreen();
+            }
+            else
+            {
+                endScreens.ShowLossScreen();
+            }
+        }
+
         if (currentlySelectedPlayer.GetHashCode().Equals(player1.GetHashCode())) { ChangeToPlayer2(true); /*Debug.Log("Toggled active player now becomes PLAYER2"); */} 
         else {  ChangeToPlayer1(true);/* Debug.Log("Toggled active player now becomes PLAYER1");*/ }
     }
