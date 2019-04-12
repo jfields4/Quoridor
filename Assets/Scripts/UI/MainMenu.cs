@@ -18,17 +18,17 @@ public class MainMenu : MonoBehaviour
 
     public void GoToGlobalOptions()
     {
-        SceneManager.LoadScene(6);
+        SceneManager.LoadScene(5);
     }
 
     public void GoToHowTo()
     {
-        SceneManager.LoadScene(5);
+        SceneManager.LoadScene(6);
     }
 
     public void GoToPlayGame()
     {
-        SceneManager.LoadScene(2);
+        SceneManager.LoadScene(3);
     }
 
     public void ExitGame() {
