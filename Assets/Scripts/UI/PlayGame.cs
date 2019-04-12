@@ -16,6 +16,6 @@ public class PlayGame : MonoBehaviour
     }
 
     public void GoToGameOptions() {
-        SceneManager.LoadScene(3);
+        SceneManager.LoadScene(2);
     }
 }
