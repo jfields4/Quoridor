@@ -1188,10 +1188,8 @@ public class AI : ScriptableObject
         return adjacent;
     }
 
-    public AI(bool lev, bool first, Parameters param)
+    public void OnEnable()
     {
-        level = lev;
-        firstPlayer = first;
         gameBoard = new Board();
         gameState.walls = new byte[2];
 
@@ -1204,16 +1202,7 @@ public class AI : ScriptableObject
             gameState.previous[i] = new Move(0, 0, 0);
         }
         gameState.oldest = 0;
-
-        evParam = param;
-        if (lev)
-        {
-            wallArea = 1.75;
-        }
-        else
-        {
-            wallArea = 0.75;
-        }
+        
     }
 
     public void Init(bool lev, bool first, Parameters param)
