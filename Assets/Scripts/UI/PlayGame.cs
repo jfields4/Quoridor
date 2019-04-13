@@ -11,11 +11,15 @@ public class PlayGame : MonoBehaviour
 
     void Start() {
         btPlay1.onClick.AddListener(GoToGameOptions);
-        btPlay2.onClick.AddListener(GoToGameOptions);
-        btPlay3.onClick.AddListener(GoToGameOptions);
+        btPlay2.onClick.AddListener(GoToLobby);
     }
 
     public void GoToGameOptions() {
         SceneManager.LoadScene(2);
+    }
+
+    public void GoToLobby()
+    {
+        SceneManager.LoadScene(7);
     }
 }
