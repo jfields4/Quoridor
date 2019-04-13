@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
     
     private gameboard.Move opponentMove = new gameboard.Move(0,0,0);
     public LoadEndScreens endScreens;
-    gamecore Core;
+    public gamecore Core;
     private bool moveNow;                           // Flag indicates whether the player should move now or not
     internal Player currentlySelectedPlayer;        // The player that is currently selected
     internal Players lastMoveBy;                    // The player that made the last move
@@ -104,7 +104,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         Core = gamecore.CreateInstance<gamecore>();
-        Core.Init(true);
+        Core.Init(GameObject.FindObjectOfType<GameSettings>().AIGame);
         currentlySelectedPlayer = player1;
         //currentlyActivePlayer.text = "Active Player : " + $"<color=#00ff00ff>{currentlySelectedPlayer.playerType}</color>";
 		currentlyActivePlayer.text =  currentlySelectedPlayer.playerType.ToString();

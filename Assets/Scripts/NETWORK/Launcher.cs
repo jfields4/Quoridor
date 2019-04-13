@@ -10,7 +10,7 @@ using Photon.Realtime;
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
-    private byte maxPlayers = 2;
+    private byte maxPlayers = 1;
 
     public GameObject Controls;
     public GameObject Connecting;
