@@ -104,6 +104,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         Core = gamecore.CreateInstance<gamecore>();
+        Core.Init(true);
         currentlySelectedPlayer = player1;
         //currentlyActivePlayer.text = "Active Player : " + $"<color=#00ff00ff>{currentlySelectedPlayer.playerType}</color>";
 		currentlyActivePlayer.text =  currentlySelectedPlayer.playerType.ToString();

@@ -17,12 +17,17 @@ public class GameCore : ScriptableObject
 
     public GameCore()
     {
-        AIGame = true;
     }
 
     public void OnEnable()
     {
         board = gameBoard.CreateInstance<gameBoard>();
+        
+    }
+
+    public void Init(bool AI)
+    {
+        AIGame = AI;
         if (AIGame)
         {
             AIOpponent.Parameters prms = new AIOpponent.Parameters();
