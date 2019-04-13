@@ -3,6 +3,7 @@
 
 //https://int8.io/monte-carlo-tree-search-beginners-guide/
 
+
 using UnityEngine;
 using System;
 using System.Text;
@@ -10,7 +11,7 @@ using System.Collections;
 using System.Diagnostics;
 using Move = Board.Move;
 
-public class AI: ScriptableObject
+public class AI : ScriptableObject
 {
     public class Board
     {
@@ -435,7 +436,7 @@ public class AI: ScriptableObject
     }
     public struct State
     {
-        public byte [] walls;
+        public byte[] walls;
         public Move[] previous;
         public int oldest;
 
@@ -475,58 +476,58 @@ public class AI: ScriptableObject
             move = ExecuteMove(gameBoard.PlayerPositions[0], Direction.Forward, 0);
             gameState.previous[gameState.oldest] = new Move(gameBoard.PlayerPositions[0]);
             gameState.oldest++;
-            
+
             gameBoard.MakeMove(move);
             return move;
         }
         return move;
     }
-    public Move GetMove(Move move) {
+    public Move GetMove(Move move)
+    {
         Move selection = new Move(0, 0, 0);
         byte me = 1;
         if (firstPlayer)
         {
             me = 0;
         }
-
         gameBoard.MakeMove(move);
-        //if (gameBoard.CheckForEndGame())
-        //{
-        //    return selection;
-        //}
         if (move.Value != 0)
         {
-            gameState.walls[1-me] -= 1;
+            gameState.walls[1 - me] -= 1;
         }
 
         Move[] possibilities = CurrentPossibleMoves(me);
 
-        if (ReadyForAlphaBeta()) {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            double[] values = new double[MAX_MOVES];
-            double max = -INF - 1;
-            int i = 0;
-            int chosen = 0;
-            foreach (Move m in possibilities)
-            {                
-                if (m != selection && (m == gameState.previous[0] ||
-                    m == gameState.previous[1] ||
-                    m == gameState.previous[2] ||
-                    m == gameState.previous[3]))
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
+        double[] values = new double[MAX_MOVES];
+        double max = double.NegativeInfinity;
+        int i = 0;
+        int chosen = 0;
+        foreach (Move m in possibilities)
+        {
+            if (m != selection && (m == gameState.previous[0] ||
+                m == gameState.previous[1] ||
+                m == gameState.previous[2] ||
+                m == gameState.previous[3]))
+            {
+                values[i] = double.NegativeInfinity;
+                if (values[i] >= max)
                 {
-                    values[i] = -evParam.WIN;
-                    if (values[i] > max)
-                    {
-                        chosen = i;
-                        max = values[i];
-                    }
+                    chosen = i;
+                    max = values[i];
                 }
-                else if (m != selection)
+            }
+            else if (m != selection)
+            {
+                if (sw.ElapsedMilliseconds > MAX_TIME)
                 {
-                    if (sw.ElapsedMilliseconds > MAX_TIME)
+                    if (possibilities[chosen].Value == 0)
                     {
-                        if (possibilities[chosen].Value == 0)
+                        if (m != gameState.previous[0] &&
+                            m != gameState.previous[1] &&
+                            m != gameState.previous[2] &&
+                            m != gameState.previous[3])
                         {
                             gameState.previous[gameState.oldest] = new Move(gameBoard.PlayerPositions[me]);
                             gameState.oldest++;
@@ -535,59 +536,45 @@ public class AI: ScriptableObject
                                 gameState.oldest = 0;
                             }
                         }
-                        else
-                        {
-                            gameState.walls[me] -= 1;
-                        }
-
-                        gameBoard.MakeMove(possibilities[chosen]);
-                        return possibilities[chosen];
-                    }
-                    Node toConsider = new Node(gameBoard, gameState);
-                    toConsider.gameboard.MakeMove(m);
-                    if (m.Value == 0)
-                    {
-                        //toConsider.currentstate.previous[toConsider.currentstate.oldest] = new Move(toConsider.gameboard.PlayerPositions[toConsider.currentstate.oldest]);
-                        //toConsider.currentstate.oldest++;
-                        //if (toConsider.currentstate.oldest == NUM_PREV)
-                        //{
-                        //    toConsider.currentstate.oldest = 0;
-                        //}
                     }
                     else
                     {
-                        toConsider.currentstate.walls[me] -= 1;
+                        gameState.walls[me] -= 1;
                     }
-                    values[i] = AlphaBeta(toConsider, DEPTH, -INF, INF, !firstPlayer);
-                    if (values[i] > max)
-                    {
-                        chosen = i;
-                        max = values[i];
-                    }
+
+                    gameBoard.MakeMove(possibilities[chosen]);
+                    return possibilities[chosen];
                 }
-                i++;
-            }
-            selection = new Move(possibilities[chosen]);
-        }
-        else {
-            bool found = false;
-            for (int i = 0; !found && i < MAX_MOVES; i++)
-            {
-                if (possibilities[i] != selection)
+                Node toConsider = new Node(gameBoard, gameState);
+                toConsider.gameboard.MakeMove(m);
+                if (m.Value != 0)
                 {
-                    selection = new Move(possibilities[i]);
-                    found = true;
+                    toConsider.currentstate.walls[me] -= 1;
+                }
+                values[i] = AlphaBeta(toConsider, DEPTH, -INF, INF, !firstPlayer);
+                if (values[i] > max)
+                {
+                    chosen = i;
+                    max = values[i];
                 }
             }
+            i++;
         }
+        selection = new Move(possibilities[chosen]);
 
         if (selection.Value == 0)
         {
-            gameState.previous[gameState.oldest] = new Move(gameBoard.PlayerPositions[me]);
-            gameState.oldest++;
-            if (gameState.oldest >= NUM_PREV)
+            if (selection != gameState.previous[0] &&
+                selection != gameState.previous[1] &&
+                selection != gameState.previous[2] &&
+                selection != gameState.previous[3])
             {
-                gameState.oldest = 0;
+                gameState.previous[gameState.oldest] = new Move(gameBoard.PlayerPositions[me]);
+                gameState.oldest++;
+                if (gameState.oldest >= NUM_PREV)
+                {
+                    gameState.oldest = 0;
+                }
             }
         }
         else
@@ -614,6 +601,8 @@ public class AI: ScriptableObject
             result[i] = new Move(0, 0, 0);
         }
 
+        int arrayPos = 0;
+
         if (node.gameboard.Turns != 4)
         {
             Move selection;
@@ -630,8 +619,9 @@ public class AI: ScriptableObject
                 }
                 else if (node.gameboard.ValidateMove(selection))
                 {
-                    result[(int)d] = new Move(selection);
+                    result[arrayPos] = new Move(selection);
                     legalMoves++;
+                    arrayPos++;
                 }
                 if (jump)
                 {
@@ -640,14 +630,16 @@ public class AI: ScriptableObject
                         selection = ExecuteMove(node.gameboard.PlayerPositions[node.gameboard.NotCurrent], Direction.Left, turn);
                         if (node.gameboard.ValidateMove(selection))
                         {
-                            result[4] = new Move(selection);
+                            result[arrayPos] = new Move(selection);
                             legalMoves++;
+                            arrayPos++;
                         }
                         selection = ExecuteMove(node.gameboard.PlayerPositions[node.gameboard.NotCurrent], Direction.Right, turn);
                         if (node.gameboard.ValidateMove(selection))
                         {
-                            result[5] = new Move(selection);
+                            result[arrayPos] = new Move(selection);
                             legalMoves++;
+                            arrayPos++;
                         }
                     }
                     else
@@ -655,48 +647,45 @@ public class AI: ScriptableObject
                         selection = ExecuteMove(node.gameboard.PlayerPositions[node.gameboard.NotCurrent], Direction.Forward, turn);
                         if (node.gameboard.ValidateMove(selection))
                         {
-                            result[4] = new Move(selection);
+                            result[arrayPos] = new Move(selection);
                             legalMoves++;
+                            arrayPos++;
                         }
                         selection = ExecuteMove(node.gameboard.PlayerPositions[node.gameboard.NotCurrent], Direction.Backward, turn);
                         if (node.gameboard.ValidateMove(selection))
                         {
-                            result[5] = new Move(selection);
+                            result[arrayPos] = new Move(selection);
                             legalMoves++;
+                            arrayPos++;
                         }
                     }
                 }
             }
         }
-        
+
         if (node.currentstate.walls[turn] > 0)
         {
-            GenerateWalls(result, node, turn);
+            GenerateWalls(result, node, turn, arrayPos);
         }
-
-        //TEMPORARY FIX
-        //result[1] = new Move(0, 0, 0);
 
         return result;
     }
 
-    private void GenerateWalls(Move[] possibilities, Node node, byte turn)
+    private void GenerateWalls(Move[] possibilities, Node node, byte turn, int arrayPos)
     {
-        // Start walls at index 6
-
         if (node.gameboard.Turns < 8)
         {
-            OpeningWalls(possibilities, node, turn);
+            OpeningWalls(possibilities, node, turn, arrayPos);
         }
         else //if (node.gameboard.Turns < 20)
         {
-            MiddleWalls(possibilities, node, turn);
+            MiddleWalls(possibilities, node, turn, arrayPos);
         }
     }
 
-    private void OpeningWalls (Move[] possibilities, Node node, byte turn)
+    private void OpeningWalls(Move[] possibilities, Node node, byte turn, int arrayPos)
     {
-        int i = 6;
+        int i = arrayPos;
         if (level && turn == 0)
         {
             Move wall = new Move(3, 4, 1);
@@ -795,14 +784,14 @@ public class AI: ScriptableObject
         }
     }
 
-    private void MiddleWalls (Move[] possibilities, Node node, byte turn)
+    private void MiddleWalls(Move[] possibilities, Node node, byte turn, int arrayPos)
     {
-        int i = 6;
-        for (int row = node.gameboard.PlayerPositions[node.gameboard.NotCurrent].Row - 2; 
-            row <= node.gameboard.PlayerPositions[node.gameboard.NotCurrent].Row + 1; row++)
+        int i = arrayPos;
+        for (int row = (int)(node.gameboard.PlayerPositions[node.gameboard.NotCurrent].Row - wallArea);
+            row <= (int)(node.gameboard.PlayerPositions[node.gameboard.NotCurrent].Row + wallArea - 1); row++)
         {
-            for (int col = node.gameboard.PlayerPositions[node.gameboard.NotCurrent].Column - 1; 
-                col < node.gameboard.PlayerPositions[node.gameboard.NotCurrent].Column; col++)
+            for (int col = (int)(node.gameboard.PlayerPositions[node.gameboard.NotCurrent].Column - wallArea);
+                col < (int)(node.gameboard.PlayerPositions[node.gameboard.NotCurrent].Column + wallArea - 1); col++)
             {
                 if (row < 0 || col < 0 || row > 9 || col > 9) { }
                 else if (node.gameboard.GameBoard[row, col] == 0)
@@ -810,12 +799,20 @@ public class AI: ScriptableObject
                     Move wall = new Move((byte)row, (byte)col, 1);
                     if (node.gameboard.ValidateMove(wall))
                     {
+                        if (i > MAX_MOVES)
+                        {
+                            break;
+                        }
                         possibilities[i] = wall;
                         i++;
                     }
                     wall = new Move((byte)row, (byte)col, -1);
                     if (node.gameboard.ValidateMove(wall))
                     {
+                        if (i > MAX_MOVES)
+                        {
+                            break;
+                        }
                         possibilities[i] = wall;
                         i++;
                     }
@@ -825,29 +822,28 @@ public class AI: ScriptableObject
         }
     }
 
-    private Move ExecuteMove(Move current, Direction togo, byte turn) {
+    private Move ExecuteMove(Move current, Direction togo, byte turn)
+    {
         Move destination = new Move(current);
 
-        if (turn == 0 && togo == Direction.Forward || turn != 0 && togo == Direction.Backward) {
+        if (turn == 0 && togo == Direction.Forward || turn != 0 && togo == Direction.Backward)
+        {
             destination.Row = (byte)(destination.Row - 1);
         }
-        else if (turn == 0 && togo == Direction.Backward || turn != 0 && togo == Direction.Forward) {
+        else if (turn == 0 && togo == Direction.Backward || turn != 0 && togo == Direction.Forward)
+        {
             destination.Row = (byte)(destination.Row + 1);
         }
-        else if (turn == 0 && togo == Direction.Left || turn != 0 && togo == Direction.Right) {
+        else if (turn == 0 && togo == Direction.Left || turn != 0 && togo == Direction.Right)
+        {
             destination.Column = (byte)(destination.Column - 1);
         }
-        else { // firstPlayer going Right or !firstPlayer going left
+        else
+        { // firstPlayer going Right or !firstPlayer going left
             destination.Column = (byte)(destination.Column + 1);
         }
 
         return destination;
-    }
-        
-    private bool ReadyForAlphaBeta() {
-        bool isReady = true;
-
-        return isReady;
     }
 
     private double AlphaBeta(Node node, int depth, double alpha, double beta, bool maximizingPlayer)
@@ -868,20 +864,12 @@ public class AI: ScriptableObject
         Move[] curPosMoves = CurrentPossibleMoves(node, turn);
         if (maximizingPlayer)
         {
-            foreach (Move m in curPosMoves) {
+            foreach (Move m in curPosMoves)
+            {
                 if (m != empty)
                 {
                     Node toConsider = new Node(node.gameboard, node.currentstate);
-                    if (m.Value == 0)
-                    {
-                        //toConsider.currentstate.previous[toConsider.currentstate.oldest] = new Move(toConsider.gameboard.PlayerPositions[turn]);
-                        //toConsider.currentstate.oldest++;
-                        //if (toConsider.currentstate.oldest == NUM_PREV)
-                        //{
-                        //    toConsider.currentstate.oldest = 0;
-                        //}
-                    }
-                    else
+                    if (m.Value != 0)
                     {
                         toConsider.currentstate.walls[turn] -= 1;
                     }
@@ -903,16 +891,7 @@ public class AI: ScriptableObject
                 {
                     Node toConsider = new Node(node.gameboard, node.currentstate);
                     toConsider.gameboard.MakeMove(m);
-                    if (m.Value == 0)
-                    {
-                        //toConsider.currentstate.previous[toConsider.currentstate.oldest] = new Move(toConsider.gameboard.PlayerPositions[turn]);
-                        //toConsider.currentstate.oldest++;
-                        //if (toConsider.currentstate.oldest == NUM_PREV)
-                        //{
-                        //    toConsider.currentstate.oldest = 0;
-                        //}
-                    }
-                    else
+                    if (m.Value != 0)
                     {
                         toConsider.currentstate.walls[turn] -= 1;
                     }
@@ -930,12 +909,13 @@ public class AI: ScriptableObject
         }
     }
 
-    private bool Terminal(Node node, bool maximizingPlayer) {
+    private bool Terminal(Node node, bool maximizingPlayer)
+    {
         bool isTerminal = false;
-        
+
         int cur = node.gameboard.PlayerPositions[node.gameboard.Current].Row;
         int notcur = node.gameboard.PlayerPositions[node.gameboard.NotCurrent].Row;
-        if (cur == goals[node.gameboard.Current] || notcur == goals[1- node.gameboard.Current])
+        if (cur == goals[node.gameboard.Current] || notcur == goals[1 - node.gameboard.Current])
         {
             isTerminal = true;
         }
@@ -943,7 +923,8 @@ public class AI: ScriptableObject
         return isTerminal;
     }
 
-    private double Evaluation(Node potential, bool maximizingPlayer, bool terminal) {
+    private double Evaluation(Node potential, bool maximizingPlayer, bool terminal)
+    {
         double score = 0;
         int i;
         if (maximizingPlayer == firstPlayer)
@@ -968,10 +949,19 @@ public class AI: ScriptableObject
         }
         else
         {
+            if (OneAway(potential, i, maximizingPlayer))
+            {
+                score += evParam.WIN;
+            }
+            else if (TwoAway(potential, i, maximizingPlayer))
+            {
+                score += evParam.WIN / 2;
+            }
+
             // includes: 
             //	* remaining walls
             score += potential.currentstate.walls[i];
-            score -= potential.currentstate.walls[1-i];
+            score -= potential.currentstate.walls[1 - i];
 
             //	? availability of jump (for next player)
             if (potential.gameboard.PlayerPositions[potential.gameboard.Current].Column ==
@@ -1055,94 +1045,137 @@ public class AI: ScriptableObject
             //    }
             //}
 
-            if (i == 0)
-            {
-                for (int j = potential.gameboard.PlayerPositions[i].Row - 1; j > 1; j--)
-                {
-                    int col = potential.gameboard.PlayerPositions[i].Column;
-                   
-                    if (potential.gameboard.GameBoard[j,col] != 0)
-                    {
-                        wallsByFirst++;
-                    }
-                    if (potential.gameboard.GameBoard[j, col-1] != 0)
-                    {
-                        wallsByFirst++;
-                    }
-                }
-                for (int j = potential.gameboard.PlayerPositions[1-i].Row; j < 8; j++)
-                {
-                    int col = potential.gameboard.PlayerPositions[1-i].Column;
+            //if (i == 0)
+            //{
+            //    for (int j = potential.gameboard.PlayerPositions[i].Row - 1; j > 1; j--)
+            //    {
+            //        int col = potential.gameboard.PlayerPositions[i].Column;
 
-                    if (potential.gameboard.GameBoard[j, col] != 0)
-                    {
-                        wallsBySecond++;
-                    }
-                    if (potential.gameboard.GameBoard[j, col - 1] != 0)
-                    {
-                        wallsBySecond++;
-                    }
-                }
-            }
-            else
-            {
-                for (int j = potential.gameboard.PlayerPositions[1-i].Row - 1; j > 1; j--)
-                {
-                    int col = potential.gameboard.PlayerPositions[1-i].Column;
+            //        if (potential.gameboard.GameBoard[j,col] != 0)
+            //        {
+            //            wallsByFirst++;
+            //        }
+            //        if (potential.gameboard.GameBoard[j, col-1] != 0)
+            //        {
+            //            wallsByFirst++;
+            //        }
+            //    }
+            //    for (int j = potential.gameboard.PlayerPositions[1-i].Row; j < 8; j++)
+            //    {
+            //        int col = potential.gameboard.PlayerPositions[1-i].Column;
 
-                    if (potential.gameboard.GameBoard[j, col] != 0)
-                    {
-                        wallsByFirst++;
-                    }
-                    if (potential.gameboard.GameBoard[j, col - 1] != 0)
-                    {
-                        wallsByFirst++;
-                    }
-                }
-                for (int j = potential.gameboard.PlayerPositions[i].Row; j < 8; j++)
-                {
-                    int col = potential.gameboard.PlayerPositions[i].Column;
+            //        if (potential.gameboard.GameBoard[j, col] != 0)
+            //        {
+            //            wallsBySecond++;
+            //        }
+            //        if (potential.gameboard.GameBoard[j, col - 1] != 0)
+            //        {
+            //            wallsBySecond++;
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    for (int j = potential.gameboard.PlayerPositions[1-i].Row - 1; j > 1; j--)
+            //    {
+            //        int col = potential.gameboard.PlayerPositions[1-i].Column;
 
-                    if (potential.gameboard.GameBoard[j, col] != 0)
-                    {
-                        wallsBySecond++;
-                    }
-                    if (potential.gameboard.GameBoard[j, col - 1] != 0)
-                    {
-                        wallsBySecond++;
-                    }
-                }
-            }
+            //        if (potential.gameboard.GameBoard[j, col] != 0)
+            //        {
+            //            wallsByFirst++;
+            //        }
+            //        if (potential.gameboard.GameBoard[j, col - 1] != 0)
+            //        {
+            //            wallsByFirst++;
+            //        }
+            //    }
+            //    for (int j = potential.gameboard.PlayerPositions[i].Row; j < 8; j++)
+            //    {
+            //        int col = potential.gameboard.PlayerPositions[i].Column;
 
-            
+            //        if (potential.gameboard.GameBoard[j, col] != 0)
+            //        {
+            //            wallsBySecond++;
+            //        }
+            //        if (potential.gameboard.GameBoard[j, col - 1] != 0)
+            //        {
+            //            wallsBySecond++;
+            //        }
+            //    }
+            //}
+
+
             score -= wallsByFirst * evParam.WALL;
             score += wallsBySecond * evParam.WALL;
             score += firstMovement;
             score -= secondMovement;
-            
+
             if (!maximizingPlayer)
             {
                 score = score * (-1);
             }
         }
 
-        //Console.WriteLine("Current: Row " + potential.gameboard.PlayerPositions[potential.gameboard.Current].Row +
-        //    " Column " + potential.gameboard.PlayerPositions[potential.gameboard.Current].Column);
-        //Console.WriteLine("Not Current: Row " + potential.gameboard.PlayerPositions[potential.gameboard.NotCurrent].Row +
-        //    " Column " + potential.gameboard.PlayerPositions[potential.gameboard.NotCurrent].Column);
-        //Console.WriteLine("Score = " + score + "\n");
-
         return score;
     }
 
-    private int ShortestPath (Node node)
+    private bool OneAway(Node node, int player, bool mp)
     {
-        int result = 0;
+        bool result = false;
+
+        Move m = new Move(ExecuteMove(node.gameboard.PlayerPositions[player], Direction.Forward, (byte)player));
+
+        if (node.gameboard.ValidateMove(m))
+        {
+            node.gameboard.MakeMove(m);
+            if (Terminal(node, mp))
+            {
+                result = true;
+            }
+        }
 
         return result;
     }
 
-    private bool Adjacent (Move first, Move second)
+    private bool CallOne(Node node, int player, bool mp, Direction d)
+    {
+        bool result = false;
+
+        Move m = new Move(ExecuteMove(node.gameboard.PlayerPositions[player], d, (byte)player));
+        if (node.gameboard.ValidateMove(m))
+        {
+            node.gameboard.MakeMove(m);
+            if (OneAway(node, player, mp))
+            {
+                result = true;
+            }
+        }
+
+        return result;
+    }
+
+    private bool TwoAway(Node node, int player, bool mp)
+    {
+        bool result = false;
+
+        if (CallOne(node, player, mp, Direction.Forward))
+        {
+            return true;
+        }
+        if (CallOne(node, player, mp, Direction.Left))
+        {
+            return true;
+        }
+        if (CallOne(node, player, mp, Direction.Right))
+        {
+            return true;
+        }
+
+        return result;
+    }
+
+
+    private bool Adjacent(Move first, Move second)
     {
         bool adjacent = false;
 
@@ -1155,26 +1188,11 @@ public class AI: ScriptableObject
         return adjacent;
     }
 
-    public AI(bool lev, bool first, Parameters param) {
-        gameBoard = new Board();
-
-        gameState.walls = new byte[2];
-        
-        gameState.walls[0] = 10;
-        gameState.walls[1] = 10;
-
-        gameState.previous = new Move[NUM_PREV];
-        for (int i = 0; i < NUM_PREV; i++)
-        {
-            gameState.previous[i] = new Move(0, 0, 0);
-        }
-        gameState.oldest = 0;
-    }
-
-    public void OnEnable()
+    public AI(bool lev, bool first, Parameters param)
     {
+        level = lev;
+        firstPlayer = first;
         gameBoard = new Board();
-
         gameState.walls = new byte[2];
 
         gameState.walls[0] = 10;
@@ -1186,6 +1204,16 @@ public class AI: ScriptableObject
             gameState.previous[i] = new Move(0, 0, 0);
         }
         gameState.oldest = 0;
+
+        evParam = param;
+        if (lev)
+        {
+            wallArea = 1.75;
+        }
+        else
+        {
+            wallArea = 0.75;
+        }
     }
 
     public void Init(bool lev, bool first, Parameters param)
@@ -1193,6 +1221,14 @@ public class AI: ScriptableObject
         level = lev;
         firstPlayer = first;
         evParam = param;
+        if (lev)
+        {
+            wallArea = 1.75;
+        }
+        else
+        {
+            wallArea = 0.75;
+        }
     }
 
     // This does not exist
@@ -1208,6 +1244,7 @@ public class AI: ScriptableObject
         public double WALL;
         public double DIST;
     }
+
     // Parameters for evaluation, play around to find best values
     private Parameters evParam;
 
@@ -1217,10 +1254,12 @@ public class AI: ScriptableObject
     private const byte MAX_MOVES = 50;
     private const int MAX_TIME = 5000;
     private const byte NUM_PREV = 4;
-    
+
+    private double wallArea;
+
     private Board gameBoard;
     private State gameState;
-    private readonly byte[] goals = { 1,9 };
+    private byte[] goals = { 1, 9 };
     private bool level;
     private bool firstPlayer;
 }
