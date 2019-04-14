@@ -104,7 +104,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         Core = gamecore.CreateInstance<gamecore>();
-        Core.Init(GameObject.FindObjectOfType<GameSettings>().AIGame);
+        Core.Init(GameObject.FindObjectOfType<GameSettings>().AIGame, GameObject.FindObjectOfType<GameSettings>().AIHard);
         currentlySelectedPlayer = player1;
         //currentlyActivePlayer.text = "Active Player : " + $"<color=#00ff00ff>{currentlySelectedPlayer.playerType}</color>";
 		currentlyActivePlayer.text =  currentlySelectedPlayer.playerType.ToString();

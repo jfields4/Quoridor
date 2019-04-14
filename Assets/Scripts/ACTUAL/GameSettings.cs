@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameSettings : MonoBehaviour
 {
     public bool AIGame;
+    public bool AIHard;
 
     void Awake()
     {
@@ -19,5 +20,15 @@ public class GameSettings : MonoBehaviour
     public void SetToNetworkGame()
     {
         AIGame = false;
+    }
+
+    public void SetAIToHard()
+    {
+        AIHard = true;
+    }
+
+    public void SetAIToEasy()
+    {
+        AIHard = false;
     }
 }

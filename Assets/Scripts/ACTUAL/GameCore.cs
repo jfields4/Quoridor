@@ -11,6 +11,7 @@ public class GameCore : ScriptableObject
     gameBoard board;
 
     public bool AIGame;
+    public bool AIHard;
     AIOpponent ComputerOpponent;
 
     gameBoard.Move LastMove = new gameBoard.Move(0, 0, 0);
@@ -25,7 +26,7 @@ public class GameCore : ScriptableObject
         
     }
 
-    public void Init(bool AI)
+    public void Init(bool AI, bool AIHard)
     {
         AIGame = AI;
         if (AIGame)
@@ -40,7 +41,7 @@ public class GameCore : ScriptableObject
             prms.DIST = 30;
 
             ComputerOpponent = AIOpponent.CreateInstance<AIOpponent>();
-            ComputerOpponent.Init(true, false, prms);
+            ComputerOpponent.Init(AIHard, false, prms);
         }
     }
 
