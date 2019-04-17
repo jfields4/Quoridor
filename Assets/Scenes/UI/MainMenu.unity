@@ -1053,6 +1053,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AIGame: 0
+  AIHard: 0
 --- !u!4 &1455615511
 Transform:
   m_ObjectHideFlags: 0
@@ -1174,13 +1175,15 @@ MonoBehaviour:
     m_BestFit: 0
     m_MinSize: 0
     m_MaxSize: 40
-    m_Alignment: 0
+    m_Alignment: 1
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: How to play
+  m_Text: 'Tutorial
+
+'
 --- !u!222 &1562132368
 CanvasRenderer:
   m_ObjectHideFlags: 0
