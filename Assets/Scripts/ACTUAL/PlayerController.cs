@@ -37,7 +37,7 @@ public class PlayerController : MonoBehaviour
     private float jumpAnim;                         // The jump animation time keeper
     private Vector3 playerStationaryPos;            // The position of the player when it was stationary before jumping
     private bool allowPlayerAction = true;          // Should the player be allowed to make a move now?
-
+    private bool jumped;
 
 
 
@@ -161,7 +161,7 @@ public class PlayerController : MonoBehaviour
 
                         previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
                         gameboard.Move selectedMove = new gameboard.Move((byte)(10 - hitBlockPosition.row), (byte)(hitBlockPosition.col - 64), 0);
-
+                        
                         if (Core.ValidateMove(selectedMove))
                         {
                             if (MovePlayer(hitBlockPosition.col, hitBlockPosition.row))
@@ -172,7 +172,7 @@ public class PlayerController : MonoBehaviour
                             else
                             {
                                 // might be able to jump
-                                TryJump(hitBlockPosition);
+                                TryJump(hitBlockPosition, selectedMove);
                             }
                         }
                         
@@ -207,7 +207,7 @@ public class PlayerController : MonoBehaviour
 
         if (moveNow)
         {
-
+            jumped = false;
             // As soon as the player starts to move stop his next actions until the move is complete
              allowPlayerAction = false;
 
@@ -237,6 +237,8 @@ public class PlayerController : MonoBehaviour
                     }
                     else if (opponentMove.Value == 1 || opponentMove.Value == -1)
                     {
+                        Debug.Log("Selected move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
+                        Core.ProcessMove(opponentMove);
                         opponentMove.Row = (byte)(10 - opponentMove.Row);
                         string stringMove = Core.ConvertMoveToString(opponentMove);
                         string upper = stringMove.ToUpper();
@@ -247,8 +249,6 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
-
-
         else if(shouldJump)
         {
 
@@ -261,8 +261,6 @@ public class PlayerController : MonoBehaviour
 
             jumpAnim += Time.deltaTime;
             actingPlayer.position = MathParabola.Parabola(playerStationaryPos, playerNextDestination, jumpHeight, jumpAnim / timeToStayInAir);
-    
-
         }
         
     }
@@ -522,15 +520,36 @@ public class PlayerController : MonoBehaviour
 
     public void StopJump(Players requestingPlayer)
     {
-        //Debug.Log(requestingPlayer + " is requesting to stop the jump ");
         if(requestingPlayer == currentlySelectedPlayer.playerType && shouldJump)
         {
             currentlySelectedPlayer.playerGameObject.transform.position = playerNextDestination;
             allowPlayerAction = true;
             shouldJump = false;
-
             // Change player as the move has been completely made now
-            //ToggleActivePlayer();
+            ToggleActivePlayer();
+            opponentMove = Core.GetMove();
+            Debug.Log("Selected move jump: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
+            if (opponentMove.Value == 0)
+            {
+                opponentMove.Row = (byte)(10 - opponentMove.Row);
+                string stringMove = Core.ConvertMoveToString(opponentMove);
+                string upper = stringMove.ToUpper();
+                char temp = upper[0];
+
+                MovePlayer(temp, opponentMove.Row);
+            }
+            else if (opponentMove.Value == 1 || opponentMove.Value == -1)
+            {
+                Core.ProcessMove(opponentMove);
+                opponentMove.Row = (byte)(10 - opponentMove.Row);
+                string stringMove = Core.ConvertMoveToString(opponentMove);
+                string upper = stringMove.ToUpper();
+                char temp = upper[0];
+                moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row - 1, opponentMove.Value);
+                ToggleActivePlayer();
+            }
+
+            
         }
     }
 
@@ -623,7 +642,7 @@ public class PlayerController : MonoBehaviour
 
     public bool MovePlayer(char col, int row)
     {
-        //Debug.Log("Recieved " + row + " " + col);
+        Debug.Log("Recieved " + row + " " + col);
         gameboard.Move selectedMove = new gameboard.Move((byte)(10 - row), (byte)(col - 64), 0);
         //Debug.Log(selectedMove.Row + " " + selectedMove.Column);
         Core.ProcessMove(selectedMove);
@@ -675,7 +694,7 @@ public class PlayerController : MonoBehaviour
 
 
 
-    public bool TryJump(MoveTuple jumpTo)
+    public bool TryJump(MoveTuple jumpTo, gameboard.Move selectedMove)
     {
 
         MoveTuple jumpablePos = GetJumpablePosition();
@@ -698,6 +717,7 @@ public class PlayerController : MonoBehaviour
 
             else
             {
+                Core.ProcessMove(selectedMove);
                 /* Jump animation */
 
                 lastMoveBy = currentlySelectedPlayer.playerType;
@@ -707,7 +727,7 @@ public class PlayerController : MonoBehaviour
                 playerStationaryPos = currentlySelectedPlayer.playerGameObject.transform.position;
                 playerNextDestination = new Vector3(targetBlock.blockTransform.position.x, currentlySelectedPlayer.playerGameObject.transform.position.y, targetBlock.blockTransform.position.z);
                 jumpAnim = 0;
-
+                jumped = true;
                 return true;
             }
 
