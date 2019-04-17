@@ -226,6 +226,7 @@ public class PlayerController : MonoBehaviour
                 if ((weArePlayer1 != isPlayer1Selected) && moveNow == false)
                 {
                     opponentMove = Core.GetMove();
+                    Debug.Log("Selected move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
                     if (opponentMove.Value == 0)
                     {
                         opponentMove.Row = (byte)(10 - opponentMove.Row);
@@ -237,7 +238,6 @@ public class PlayerController : MonoBehaviour
                     }
                     else if (opponentMove.Value == 1 || opponentMove.Value == -1)
                     {
-                        Debug.Log("Selected move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
                         Core.ProcessMove(opponentMove);
                         opponentMove.Row = (byte)(10 - opponentMove.Row);
                         string stringMove = Core.ConvertMoveToString(opponentMove);
@@ -528,7 +528,7 @@ public class PlayerController : MonoBehaviour
             // Change player as the move has been completely made now
             ToggleActivePlayer();
             opponentMove = Core.GetMove();
-            Debug.Log("Selected move jump: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
+            Debug.Log("Selected move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
             if (opponentMove.Value == 0)
             {
                 opponentMove.Row = (byte)(10 - opponentMove.Row);

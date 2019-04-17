@@ -260,14 +260,14 @@ public class MoveWall : MonoBehaviour
         finDDot = GameObject.Find(col.ToString() + row.ToString());
         //Debug.Log("gameobjectname" + col.ToString() + row.ToString());
 
-
-        if (angle == 1)
+        Debug.Log("Wall angle " + angle);
+        if (angle == -1)
         {
             //			Debug.Log("gameobjectname"+finDDot.gameObject.name);
             TopWall[Counter2 - 1].transform.position = new Vector3(finDDot.transform.position.x, 20, finDDot.transform.position.z);  //finDDot.transform.position;
             TopWall[Counter2 - 1].transform.rotation = Quaternion.Euler(0, 0, 90);
         }
-        else if (angle == -1)
+        else if (angle == 1)
         {
             TopWall[Counter2 - 1].transform.position = new Vector3(finDDot.transform.position.x, 20, finDDot.transform.position.z);
             TopWall[Counter2 - 1].transform.rotation = Quaternion.Euler(0, 90, 90);
