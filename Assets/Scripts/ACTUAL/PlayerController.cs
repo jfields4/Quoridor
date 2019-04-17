@@ -5,6 +5,7 @@ using gamecore = GameCore;
 using gameboard = Board;
 using UnityEngine.UI;
 using System;
+using movewall = MoveWall;
 
 public class PlayerController : MonoBehaviour
 {
@@ -24,6 +25,7 @@ public class PlayerController : MonoBehaviour
     private gameboard.Move opponentMove = new gameboard.Move(0,0,0);
     public LoadEndScreens endScreens;
     public gamecore Core;
+    MoveWall moveWall;
     private bool moveNow;                           // Flag indicates whether the player should move now or not
     internal Player currentlySelectedPlayer;        // The player that is currently selected
     internal Players lastMoveBy;                    // The player that made the last move
@@ -35,6 +37,8 @@ public class PlayerController : MonoBehaviour
     private float jumpAnim;                         // The jump animation time keeper
     private Vector3 playerStationaryPos;            // The position of the player when it was stationary before jumping
     private bool allowPlayerAction = true;          // Should the player be allowed to make a move now?
+
+
 
 
     public enum Players
@@ -103,6 +107,7 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        moveWall = GameObject.Find("Controller").GetComponent<MoveWall>();
         Core = gamecore.CreateInstance<gamecore>();
         Core.Init(GameObject.FindObjectOfType<GameSettings>().AIGame, GameObject.FindObjectOfType<GameSettings>().AIHard);
         currentlySelectedPlayer = player1;
@@ -161,7 +166,7 @@ public class PlayerController : MonoBehaviour
                         {
                             if (MovePlayer(hitBlockPosition.col, hitBlockPosition.row))
                             {
-                               
+                                
                             }
 
                             else
@@ -186,17 +191,28 @@ public class PlayerController : MonoBehaviour
 
             }
         }
+        else
+        {
+            if (Physics.Raycast(ray, out hitInfo, Mathf.Infinity, LayerMasks.instance.blockLayerOnly | LayerMasks.instance.playersLayerOnly, QueryTriggerInteraction.Collide))
+            {
 
-        
-        if(moveNow)
+                if (hitInfo.transform.gameObject.layer == LayerMasks.instance.blocksLayerNumber)
+                {
+                    BoardSetup.Block blockHit = new BoardSetup.Block(hitInfo.transform.name, hitInfo.transform);
+                    MoveTuple wallPosition = GetBlockPosition(blockHit);
+                }
+            }
+
+        }
+
+        if (moveNow)
         {
 
             // As soon as the player starts to move stop his next actions until the move is complete
              allowPlayerAction = false;
 
              GameObject actingPlayer = currentlySelectedPlayer.playerGameObject;
-
-             actingPlayer.transform.position = Vector3.Lerp(actingPlayer.transform.position , playerNextDestination , Time.deltaTime * speed);
+            actingPlayer.transform.position = Vector3.Lerp(actingPlayer.transform.position , playerNextDestination , Time.deltaTime * speed);
 
             if (Vector3.Distance(actingPlayer.transform.position, playerNextDestination) <= 0.3f)
             {
@@ -206,15 +222,28 @@ public class PlayerController : MonoBehaviour
 
                 // Change player as the move has been completely made now
                 ToggleActivePlayer();
-                if((weArePlayer1 != isPlayer1Selected) && moveNow == false)
+
+                if ((weArePlayer1 != isPlayer1Selected) && moveNow == false)
                 {
                     opponentMove = Core.GetMove();
-                    opponentMove.Row = (byte)(10 - opponentMove.Row);
-                    string stringMove = Core.ConvertMoveToString(opponentMove);
-                    string upper = stringMove.ToUpper();
-                    char temp = upper[0];
+                    if (opponentMove.Value == 0)
+                    {
+                        opponentMove.Row = (byte)(10 - opponentMove.Row);
+                        string stringMove = Core.ConvertMoveToString(opponentMove);
+                        string upper = stringMove.ToUpper();
+                        char temp = upper[0];
 
-                    MovePlayer(temp, opponentMove.Row);
+                        MovePlayer(temp, opponentMove.Row);
+                    }
+                    else if (opponentMove.Value == 1 || opponentMove.Value == -1)
+                    {
+                        opponentMove.Row = (byte)(10 - opponentMove.Row);
+                        string stringMove = Core.ConvertMoveToString(opponentMove);
+                        string upper = stringMove.ToUpper();
+                        char temp = upper[0];
+                        moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row - 1, opponentMove.Value);
+                        ToggleActivePlayer();
+                    }
                 }
             }
         }
@@ -493,7 +522,7 @@ public class PlayerController : MonoBehaviour
 
     public void StopJump(Players requestingPlayer)
     {
-        Debug.Log(requestingPlayer + " is requesting to stop the jump ");
+        //Debug.Log(requestingPlayer + " is requesting to stop the jump ");
         if(requestingPlayer == currentlySelectedPlayer.playerType && shouldJump)
         {
             currentlySelectedPlayer.playerGameObject.transform.position = playerNextDestination;
@@ -501,7 +530,7 @@ public class PlayerController : MonoBehaviour
             shouldJump = false;
 
             // Change player as the move has been completely made now
-            ToggleActivePlayer();
+            //ToggleActivePlayer();
         }
     }
 
@@ -575,8 +604,8 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (currentlySelectedPlayer.GetHashCode().Equals(player1.GetHashCode())) { ChangeToPlayer2(true); /*Debug.Log("Toggled active player now becomes PLAYER2"); */} 
-        else {  ChangeToPlayer1(true);/* Debug.Log("Toggled active player now becomes PLAYER1");*/ }
+        if (currentlySelectedPlayer.GetHashCode().Equals(player1.GetHashCode())) { ChangeToPlayer2(true); Debug.Log("Toggled active player now becomes PLAYER2"); } 
+        else {  ChangeToPlayer1(true); Debug.Log("Toggled active player now becomes PLAYER1"); }
     }
 
 
@@ -594,9 +623,9 @@ public class PlayerController : MonoBehaviour
 
     public bool MovePlayer(char col, int row)
     {
-        Debug.Log("Recieved " + row + " " + col);
+        //Debug.Log("Recieved " + row + " " + col);
         gameboard.Move selectedMove = new gameboard.Move((byte)(10 - row), (byte)(col - 64), 0);
-        Debug.Log(selectedMove.Row + " " + selectedMove.Column);
+        //Debug.Log(selectedMove.Row + " " + selectedMove.Column);
         Core.ProcessMove(selectedMove);
         col = (col + "").ToUpper()[0];
 
