@@ -24,6 +24,7 @@ public class MoveWall : MonoBehaviour
     private MovementDirections movementDirectionAllowed;     // Indicates which movement direction to allow for a wall      
     private PlayerController playerController;
 
+    public SFXController sfx;
 
     private enum MovementDirections
     {
@@ -38,7 +39,7 @@ public class MoveWall : MonoBehaviour
     {
         newLogic = GameObject.Find("NewLogic").GetComponent<NewLogic>();
         playerController = GetComponent<PlayerController>();
-
+        sfx = GameObject.FindObjectOfType<SFXController>();
     }
 
     // Update is called once per frame
@@ -273,7 +274,7 @@ public class MoveWall : MonoBehaviour
             TopWall[Counter2 - 1].transform.rotation = Quaternion.Euler(0, 90, 90);
         }
 
-
+        sfx.WallSound();
 
     }
 
