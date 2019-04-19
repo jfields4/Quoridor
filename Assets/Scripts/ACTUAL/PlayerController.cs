@@ -194,9 +194,10 @@ public class PlayerController : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hitInfo;
 
-
-        if(Input.GetMouseButtonUp(0) && !MoveWall.isWallMoving && allowPlayerAction)
+        Debug.Log("MOUSE UP && !MoveWall: "+Input.GetMouseButtonUp(0)+!MoveWall.isWallMoving);
+        if (Input.GetMouseButtonUp(0) && !MoveWall.isWallMoving && allowPlayerAction)
         {
+            Debug.Log("MOUSE UP AND WALL IS NOT MOVING AND ALLOWPLAYER ACTION");
 
             if (Physics.Raycast(ray, out hitInfo , Mathf.Infinity , LayerMasks.instance.blockLayerOnly | LayerMasks.instance.playersLayerOnly , QueryTriggerInteraction.Collide))
             {
@@ -233,13 +234,13 @@ public class PlayerController : MonoBehaviour
                         previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
                         //gameboard.Move selectedMove = new gameboard.Move((byte)(10 - hitBlockPosition.row), (byte)(hitBlockPosition.col - 64), 0);
                         gameboard.Move selectedMove = new gameboard.Move(hitBlockPosition.row, (byte)(hitBlockPosition.col - 64), 0);
-                        Debug.Log("Our move: " + selectedMove.Row + " " + selectedMove.Column + " " + selectedMove.Value);
+                        //Debug.Log("Our move: " + selectedMove.Row + " " + selectedMove.Column + " " + selectedMove.Value);
 
                         //if (!GameObject.FindObjectOfType<GameSettings>().AIFirst)
                         //{
                         //    selectedMove.Row = (byte)(10 - selectedMove.Row);
                         //}
-                        Debug.Log("Our move converted: " + selectedMove.Row + " " + selectedMove.Column + " " + selectedMove.Value);
+                        //Debug.Log("Our move converted: " + selectedMove.Row + " " + selectedMove.Column + " " + selectedMove.Value);
 
                         if (Core.ValidateMove(selectedMove))
                         {
@@ -305,7 +306,7 @@ public class PlayerController : MonoBehaviour
                 actingPlayer.transform.position = playerNextDestination;
 
                 // Change player as the move has been completely made now
-                Debug.Log(GetPlayerBoardPosition(currentlySelectedPlayer));
+                //Debug.Log(GetPlayerBoardPosition(currentlySelectedPlayer));
                 ToggleActivePlayer();
 
                 if ((weArePlayer1 != isPlayer1Selected) && moveNow == false)
@@ -858,9 +859,6 @@ public class PlayerController : MonoBehaviour
         }
 
     }
-
-
-
 
     public bool TryJump(MoveTuple jumpTo, gameboard.Move selectedMove)
     {

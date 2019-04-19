@@ -170,6 +170,8 @@ public class PlacementObject : MonoBehaviour
 
         // Change the layer of the wall placed so that it can't be moved again.(Raycast will ignore this wall)
         moveWallScript.selectedWall.gameObject.layer = LayerMasks.instance.placedWallsLayerNumber;
+        //moveWallScript.isWallMoving = false;
+        MoveWall.isWallMoving = false;
         //GameObject.FindGameObjectWithTag("GameController").GetComponent<PlayerController>().ToggleActivePlayer();
     }
 

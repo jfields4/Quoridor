@@ -16,7 +16,7 @@ public class MoveWall : MonoBehaviour
     int j = 0;
     int Counter2 = 0;
 
-    internal static bool isWallMoving { private set; get; }  // Flag indicates whether the wall is being moved or not
+    public static bool isWallMoving;  // Flag indicates whether the wall is being moved or not
 
     private bool allowMovement;                              // Flag indicates whether to allow walls movement or not
     private MovementDirections movementDirectionAllowed;     // Indicates which movement direction to allow for a wall      

@@ -38,7 +38,7 @@ public class NewLogic : MonoBehaviour {
 		} else if (text.text == "Player2") {
 			remaingWalls.text = (10-Counter2).ToString ();
 		}
-        Togglimage.gameObject.GetComponent<Image>().sprite = sprite[currentSprite];
+       // Togglimage.gameObject.GetComponent<Image>().sprite = sprite[currentSprite];
 
     }
 
@@ -50,7 +50,7 @@ public class NewLogic : MonoBehaviour {
 		if (playerMove == true) {
 			
 
-			if (text.text == "Player1") {
+			
 				for (i = Counter; i < ButtonWall.Length; i++) {
 					if (i == Counter) {
 						Counter++;
@@ -65,30 +65,22 @@ public class NewLogic : MonoBehaviour {
 
 				}
 
-			} else  if(text.text == "Player2"){
-				for (j = Counter2; j < TopWall.Length; j++) {
-					if (j == Counter2) {
-						Counter2++;
-
-						TopWall [j].gameObject.SetActive (true);
-					moveWall.MoveFinalWall (TopWall [j].gameObject.transform);
-						j = Counter2;
-					} else {
-						TopWall [j].gameObject.SetActive (false);
-					}
-				}
-			}
+			
 
 		}
 		   else if(playerMove==false)
 	     	{
 		    	Togglimage.gameObject.GetComponent<Image> ().sprite = sprite [0];
                 currentSprite = 0;
-                //	UtilityServices.instance.RunDelayedCommand(1f , ()=> {MoveWall.isWallMoving = false; });    
+               // UtilityServices.instance.RunDelayedCommand(1f , ()=> {MoveWall.isWallMoving = false; });    
             }
-	}
 
-	public void LoseButton(){
+        Togglimage.gameObject.GetComponent<Image>().sprite = sprite[0];
+        currentSprite = 0;
+       // UtilityServices.instance.RunDelayedCommand(1f , ()=> {MoveWall.isWallMoving = false; });    
+    }
+
+    public void LoseButton(){
 		endScreens.ShowLossScreen();
     }
 }//class
