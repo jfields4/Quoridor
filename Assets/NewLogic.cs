@@ -21,6 +21,7 @@ public class NewLogic : MonoBehaviour {
 	public Text losePanelText;
 	public GameObject losePanel;
     public LoadEndScreens endScreens;
+    public int currentSprite = 0;
     Transform moveTranfrom;
 	Board.Move placement;
 
@@ -37,11 +38,14 @@ public class NewLogic : MonoBehaviour {
 		} else if (text.text == "Player2") {
 			remaingWalls.text = (10-Counter2).ToString ();
 		}
-	}
+        Togglimage.gameObject.GetComponent<Image>().sprite = sprite[currentSprite];
+
+    }
 
 	public void CanMove(){
 		playerMove=!playerMove;
 		Togglimage.gameObject.GetComponent<Image> ().sprite = sprite [1];
+        currentSprite = 1;
 
 		if (playerMove == true) {
 			
@@ -79,9 +83,9 @@ public class NewLogic : MonoBehaviour {
 		   else if(playerMove==false)
 	     	{
 		    	Togglimage.gameObject.GetComponent<Image> ().sprite = sprite [0];
-
-		//	UtilityServices.instance.RunDelayedCommand(1f , ()=> {MoveWall.isWallMoving = false; });    
-		    }
+                currentSprite = 0;
+                //	UtilityServices.instance.RunDelayedCommand(1f , ()=> {MoveWall.isWallMoving = false; });    
+            }
 	}
 
 	public void LoseButton(){
