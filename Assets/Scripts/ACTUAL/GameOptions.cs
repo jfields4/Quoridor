@@ -21,8 +21,6 @@ public class GameOptions : MonoBehaviour
         bt_character_4.onClick.AddListener(SelectCharacter4);
         bt_dificult_1.onClick.AddListener(SelectDifficulty1);
         bt_dificult_2.onClick.AddListener(SelectDifficulty2);
-        bt_first_1.onClick.AddListener(SelectFirst1);
-        bt_first_2.onClick.AddListener(SelectFirst2);
 
 
         theColor = bt_character_1.colors;

@@ -6,6 +6,8 @@ using gameboard = Board;
 using UnityEngine.UI;
 using System;
 using movewall = MoveWall;
+using Photon.Pun;
+using Photon.Realtime;
 
 public class PlayerController : MonoBehaviour
 {
