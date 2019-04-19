@@ -1,0 +1,25 @@
+fileFormatVersion: 2
+guid: 6ee0bf2f99a6c9347aa021efaa8fc714
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: En Garde
+  fontNames:
+  - En Garde
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 555651f3c58eb164bb08dfdaefd099de, type: 3}
+  - {fileID: 12800000, guid: bd4e8d85683656b429c96647e19a4176, type: 3}
+  - {fileID: 12800000, guid: 4538c9f9a6c7d75428b262c408146821, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -20,7 +20,8 @@ public class NewLogic : MonoBehaviour {
 	public Text remaingWalls;
 	public Text losePanelText;
 	public GameObject losePanel;
-	Transform moveTranfrom;
+    public LoadEndScreens endScreens;
+    Transform moveTranfrom;
 	Board.Move placement;
 
 	// Use this for initialization
@@ -70,12 +71,8 @@ public class NewLogic : MonoBehaviour {
 						j = Counter2;
 					} else {
 						TopWall [j].gameObject.SetActive (false);
-
 					}
-
 				}
-			
-
 			}
 
 		}
@@ -86,14 +83,8 @@ public class NewLogic : MonoBehaviour {
 		//	UtilityServices.instance.RunDelayedCommand(1f , ()=> {MoveWall.isWallMoving = false; });    
 		    }
 	}
+
 	public void LoseButton(){
-		if (text.text == "Player1") {
-			losePanel.SetActive (true);
-			losePanelText.text = "Player 1 Lose";
-		}
-		if (text.text == "Player2") {
-			losePanel.SetActive (true);
-			losePanelText.text="Player 2 Lose";
-		}
-	}
+		endScreens.ShowLossScreen();
+    }
 }//class

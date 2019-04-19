@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.3731196, g: 0.38074002, b: 0.35872713, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -256,17 +256,15 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: '- The goal is to get to the other side of t he room before your opponent
-    gets to your  side
+  m_Text: '- The goal is to get to the other side of the room before your opponent
+    gets to your side.
 
-    To move, click on your character
-
-
-    - Then click on the  space you want to move to.
+    To move, click on a square next to your character. That will be the space you
+    move to.
 
 
-    - You may place walls to impede your opponents progress. To do so, click on the
-    wall you wish to move, then click any wall space.
+    - You may place walls to impede your opponents progress. To do so, switch to wall
+    mode, then click any wall space.
 
 
 

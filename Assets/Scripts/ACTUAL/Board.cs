@@ -308,7 +308,7 @@ public class Board : ScriptableObject
 
         Walls[0] = otherBoard.Walls[0];
         Walls[1] = otherBoard.Walls[1];
-		Debug.Log (Walls [0]);
+		//Debug.Log (Walls [0]);
     }
 
     //public functions

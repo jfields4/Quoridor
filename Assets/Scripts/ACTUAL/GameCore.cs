@@ -11,18 +11,24 @@ public class GameCore : ScriptableObject
     gameBoard board;
 
     public bool AIGame;
+    public bool AIHard;
     AIOpponent ComputerOpponent;
 
     gameBoard.Move LastMove = new gameBoard.Move(0, 0, 0);
 
     public GameCore()
     {
-        AIGame = true;
     }
 
     public void OnEnable()
     {
         board = gameBoard.CreateInstance<gameBoard>();
+        
+    }
+
+    public void Init(bool AI, bool AIHard)
+    {
+        AIGame = AI;
         if (AIGame)
         {
             AIOpponent.Parameters prms = new AIOpponent.Parameters();
@@ -35,7 +41,7 @@ public class GameCore : ScriptableObject
             prms.DIST = 30;
 
             ComputerOpponent = AIOpponent.CreateInstance<AIOpponent>();
-            ComputerOpponent.Init(true, false, prms);
+            ComputerOpponent.Init(AIHard, false, prms);
         }
     }
 
