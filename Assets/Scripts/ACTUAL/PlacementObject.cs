@@ -25,7 +25,6 @@ public class PlacementObject : MonoBehaviour
     private static bool routineRunning1;
     private static bool routineRunning2;
 
-    public SFXController sfx;
 
     public enum PlacementDirection
     {
@@ -38,10 +37,10 @@ public class PlacementObject : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        moveWallScript = GameObject.FindGameObjectWithTag("GameController").GetComponent<MoveWall>();
-        sfx = GameObject.FindObjectOfType<SFXController>();
 
-        if ( (int)transform.localEulerAngles.y == 90 && (int)transform.localEulerAngles.x == 0)
+        moveWallScript = GameObject.FindGameObjectWithTag("GameController").GetComponent<MoveWall>();
+
+        if( (int)transform.localEulerAngles.y == 90 && (int)transform.localEulerAngles.x == 0)
         {
             direction = PlacementDirection.vertical;
         }
@@ -163,10 +162,8 @@ public class PlacementObject : MonoBehaviour
         }
 
         Debug.Log("Placement object move: " + move.Row + " " + move.Column + " " + move.Value);
-        
         if (GameObject.FindGameObjectWithTag("GameController").GetComponent<PlayerController>().Core.ValidateMove(move))
         {
-            sfx.WallSound();
             PlaceSelectedWall();
             GameObject.FindGameObjectWithTag("GameController").GetComponent<PlayerController>().PlaceWall(move);
         }

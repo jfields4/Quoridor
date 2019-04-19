@@ -6,8 +6,6 @@ using gameboard = Board;
 using UnityEngine.UI;
 using System;
 using movewall = MoveWall;
-using Photon.Pun;
-using Photon.Realtime;
 
 public class PlayerController : MonoBehaviour
 {
@@ -107,7 +105,6 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        photonView = PhotonView.Get(this);
         moveWall = GameObject.Find("Controller").GetComponent<MoveWall>();
         Core = gamecore.CreateInstance<gamecore>();
         Core.Init(GameObject.FindObjectOfType<GameSettings>().AIGame, GameObject.FindObjectOfType<GameSettings>().AIHard, true);
@@ -248,16 +245,16 @@ public class PlayerController : MonoBehaviour
                             {
                                 if(!GameObject.FindObjectOfType<GameSettings>().AIGame)
                                     photonView.RPC("NetworkingMoveRPC", Photon.Pun.RpcTarget.All, Core.ConvertMoveToString(selectedMove));
-
                             }
+
                             else
                             {
-                                // might be able to jump
                                 if(TryJump(hitBlockPosition, selectedMove))
                                 {
                                     if(!GameObject.FindObjectOfType<GameSettings>().AIGame)
                                         photonView.RPC("NetworkingMoveRPC", Photon.Pun.RpcTarget.All, Core.ConvertMoveToString(selectedMove));
                                 }
+                                TryJump(hitBlockPosition, selectedMove);
                             }
                         }
                         
@@ -309,7 +306,7 @@ public class PlayerController : MonoBehaviour
                 Debug.Log(GetPlayerBoardPosition(currentlySelectedPlayer));
                 ToggleActivePlayer();
 
-                if ((weArePlayer1 != isPlayer1Selected) && moveNow == false && Core.AIGame)
+                if ((weArePlayer1 != isPlayer1Selected) && moveNow == false)
                 {
                     opponentMove = Core.GetMove();
                     //if (!GameObject.FindObjectOfType<GameSettings>().AIFirst)
@@ -365,7 +362,6 @@ public class PlayerController : MonoBehaviour
         }
         
     }
-
     [PunRPC]
     void NetworkingMove(string netMove)
     {
@@ -390,7 +386,6 @@ public class PlayerController : MonoBehaviour
             ToggleActivePlayer();
         }
     }
-
     public void PlaceWall(gameboard.Move move)
     {
         Core.ProcessMove(move);

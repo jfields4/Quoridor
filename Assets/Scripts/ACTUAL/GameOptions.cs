@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,6 +21,8 @@ public class GameOptions : MonoBehaviour
         bt_character_4.onClick.AddListener(SelectCharacter4);
         bt_dificult_1.onClick.AddListener(SelectDifficulty1);
         bt_dificult_2.onClick.AddListener(SelectDifficulty2);
+        bt_first_1.onClick.AddListener(SelectFirst1);
+        bt_first_2.onClick.AddListener(SelectFirst2);
 
 
         theColor = bt_character_1.colors;
@@ -104,5 +106,19 @@ public class GameOptions : MonoBehaviour
 
         options.SetAIToHard();
         Debug.Log("AI Hard option: " + options.AIHard);
+    }
+
+    public void SelectFirst1()
+    {
+        ResetFirstColors();
+        theColor.normalColor = orange;
+        bt_first_1.colors = theColor;
+    }
+
+    public void SelectFirst2()
+    {
+        ResetFirstColors();
+        theColor.normalColor = orange;
+        bt_first_2.colors = theColor;
     }
 }
