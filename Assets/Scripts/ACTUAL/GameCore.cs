@@ -5,6 +5,8 @@ using System.Collections;
 using System.Collections.Generic;
 using gameBoard = Board;
 using AIOpponent = AI;
+using Photon.Pun;
+using Photon.Realtime;
 
 public class GameCore : ScriptableObject
 {
@@ -31,13 +33,13 @@ public class GameCore : ScriptableObject
         if (AIGame)
         {
             AIOpponent.Parameters prms = new AIOpponent.Parameters();
-            prms.FWD = 3;
-            prms.LAT = 2;
-            prms.BKWD = -1;
-            prms.JUMP = 20;
-            prms.WIN = 175;
-            prms.WALL = 3;
-            prms.DIST = 30;
+            prms.FWD = 2.223198962;
+            prms.LAT = 9.340232866;
+            prms.BKWD = -0.602717177;
+            prms.JUMP = 8.222396163;
+            prms.WIN = 134.5876635;
+            prms.WALL = 5;
+            prms.DIST = 10;
 
             ComputerOpponent = AIOpponent.CreateInstance<AIOpponent>();
             ComputerOpponent.Init(AIHard, false, prms);
@@ -75,11 +77,6 @@ public class GameCore : ScriptableObject
             if (ValidateMove(move))
             {
                 board.MakeMove(move);
-
-                //if (!AIGame)
-                //{
-                //    network.SendMove(move);
-                //}
             }
         }
     }
