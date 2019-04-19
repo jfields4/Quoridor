@@ -6,8 +6,6 @@ using gameboard = Board;
 using UnityEngine.UI;
 using System;
 using movewall = MoveWall;
-using Photon.Pun;
-using Photon.Realtime;
 
 public class PlayerController : MonoBehaviour
 {
@@ -40,7 +38,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 playerStationaryPos;            // The position of the player when it was stationary before jumping
     private bool allowPlayerAction = true;          // Should the player be allowed to make a move now?
     private bool jumped;
-    public PhotonView photonView;
+
 
 
     public enum Players
@@ -106,7 +104,6 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        photonView = PhotonView.Get(this);
         moveWall = GameObject.Find("Controller").GetComponent<MoveWall>();
         Core = gamecore.CreateInstance<gamecore>();
         Core.Init(GameObject.FindObjectOfType<GameSettings>().AIGame, GameObject.FindObjectOfType<GameSettings>().AIHard);
@@ -166,16 +163,13 @@ public class PlayerController : MonoBehaviour
                         {
                             if (MovePlayer(hitBlockPosition.col, hitBlockPosition.row))
                             {
-                                photonView.RPC("NetworkingMoveRPC", Photon.Pun.RpcTarget.All, Core.ConvertMoveToString(selectedMove));
-
+                                
                             }
+
                             else
                             {
                                 // might be able to jump
-                                if(TryJump(hitBlockPosition, selectedMove))
-                                {
-                                    photonView.RPC("NetworkingMoveRPC", Photon.Pun.RpcTarget.All, Core.ConvertMoveToString(selectedMove));
-                                }
+                                TryJump(hitBlockPosition, selectedMove);
                             }
                         }
                         
@@ -226,7 +220,7 @@ public class PlayerController : MonoBehaviour
                 // Change player as the move has been completely made now
                 ToggleActivePlayer();
 
-                if ((weArePlayer1 != isPlayer1Selected) && moveNow == false && Core.AIGame)
+                if ((weArePlayer1 != isPlayer1Selected) && moveNow == false)
                 {
                     opponentMove = Core.GetMove();
                     Debug.Log("Their move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
@@ -266,31 +260,6 @@ public class PlayerController : MonoBehaviour
             actingPlayer.position = MathParabola.Parabola(playerStationaryPos, playerNextDestination, jumpHeight, jumpAnim / timeToStayInAir);
         }
         
-    }
-
-    [PunRPC]
-    void NetworkingMove(string netMove)
-    {
-        opponentMove = Core.ConvertStringToMove(netMove);
-        if (opponentMove.Value == 0)
-        {
-            opponentMove.Row = (byte)(10 - opponentMove.Row);
-            string stringMove = Core.ConvertMoveToString(opponentMove);
-            string upper = stringMove.ToUpper();
-            char temp = upper[0];
-
-            MovePlayer(temp, opponentMove.Row);
-        }
-        else if (opponentMove.Value == 1 || opponentMove.Value == -1)
-        {
-            Core.ProcessMove(opponentMove);
-            opponentMove.Row = (byte)(10 - opponentMove.Row);
-            string stringMove = Core.ConvertMoveToString(opponentMove);
-            string upper = stringMove.ToUpper();
-            char temp = upper[0];
-            moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row - 1, opponentMove.Value);
-            ToggleActivePlayer();
-        }
     }
 
     public void PlaceWall(gameboard.Move move)
