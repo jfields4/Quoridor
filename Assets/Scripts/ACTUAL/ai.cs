@@ -1202,7 +1202,7 @@ public class AI : ScriptableObject
             gameState.previous[i] = new Move(0, 0, 0);
         }
         gameState.oldest = 0;
-        
+
     }
 
     public void Init(bool lev, bool first, Parameters param)
@@ -1252,5 +1252,3 @@ public class AI : ScriptableObject
     private bool level;
     private bool firstPlayer;
 }
-
-
