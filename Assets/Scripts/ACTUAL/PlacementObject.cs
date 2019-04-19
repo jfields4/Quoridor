@@ -114,13 +114,13 @@ public class PlacementObject : MonoBehaviour
 
     private void OnMouseExit()
     {
-        Debug.Log("Stop perchai on  " + transform.parent.name);
+        Debug.Log("MOUSE EXIT  " + transform.parent.name);
 
         isFirstMouseOver = true;
         moveWallScript.selectedWall.GetComponent<BoxCollider>().enabled = true;
         moveWallScript.selectedWall.position    = wallOriginalPosition;
         moveWallScript.selectedWall.eulerAngles = wallOriginalRotation;
-		Debug.Log("Stop perchai on  " + moveWallScript.selectedWall.position);
+		Debug.Log("MOUSE EXIT FINAL  " + moveWallScript.selectedWall.position);
     }
 
 

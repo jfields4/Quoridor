@@ -5,8 +5,6 @@ using UnityEngine.UI;
 using gameboard = Board;
 public class MoveWall : MonoBehaviour
 {
-
-
     [Tooltip("Set the speed with which the walls can be moved")]
     public float moveSpeed;
     public Transform selectedWall { private set; get; }      // The wall to move
@@ -47,6 +45,7 @@ public class MoveWall : MonoBehaviour
 
     public void MoveFinalWall(Transform wallGameObject)
     {
+        Debug.Log("MOVEFINALWALL");
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hitInfo;
 
@@ -54,7 +53,7 @@ public class MoveWall : MonoBehaviour
 
         if (newLogic.playerMove == true)
         {
-
+            Debug.Log("NEWLOGIC.PLAYERMOVE");
             //			Debug.Log (wallGameObject.transform.position);
             if (allowMovement == true) { allowMovement = false; isWallMoving = false; }
 
@@ -238,6 +237,7 @@ public class MoveWall : MonoBehaviour
 
     public void MoveWallWithQuoridorNotation(char col, int row, int angle)
     {
+        Debug.Log(" MOVE WALL qnotation method");
         for (j = Counter2; j < TopWall.Length; j++)
         {
             if (j == Counter2)
