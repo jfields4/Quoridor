@@ -23,7 +23,6 @@ public class GameCore : ScriptableObject
     public void OnEnable()
     {
         board = gameBoard.CreateInstance<gameBoard>();
-        
     }
 
     public void Init(bool AI, bool AIHard)
@@ -47,7 +46,13 @@ public class GameCore : ScriptableObject
 
     public bool ValidateMove(gameBoard.Move move)
     {
+        Debug.Log("ValidateMove: " + move.Row + " " + move.Column + " " + move.Value);
         return board.ValidateMove(move);
+    }
+
+    public bool ValidateMove(string move)
+    {
+        return board.ValidateMove(ConvertStringToMove(move));
     }
 
     public string ConvertMoveToString(gameBoard.Move move)
@@ -55,8 +60,14 @@ public class GameCore : ScriptableObject
         return board.ConvertMoveToString(move);
     }
 
+    public gameBoard.Move ConvertStringToMove(string move)
+    {
+        return board.ConvertStringToMove(move);
+    }
+
     public void ProcessMove(gameBoard.Move move)
     {
+        Debug.Log("Game Core received move: " + move.Row + " " + move.Column + " " + move.Value);
         LastMove = new gameBoard.Move(move);
 
         if (!move.Equals(null))

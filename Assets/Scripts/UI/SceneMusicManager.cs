@@ -11,17 +11,37 @@ public class SceneMusicManager : MonoBehaviour
     public MusicController music;
     public AudioSource audio;
 
+    private static SceneMusicManager instance = null;
+    public static SceneMusicManager Instance
+    {
+        get { return instance; }
+    }
+    
+    void Awake()
+    {
+        if (instance != null && instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        else
+        {
+            instance = this;
+        }
+
+        DontDestroyOnLoad(this.gameObject);
+    }
+
     // Start is called before the first frame update
     void OnEnable()
     {
-        DontDestroyOnLoad(this.gameObject);
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
     
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         //music = GameObject.FindObjectOfType<MusicController>();
-        audio = music.GetComponent<AudioSource>();
+        //audio = music.GetComponent<AudioSource>();
         Scene currentScene = SceneManager.GetActiveScene();
         string sceneName = currentScene.name;
         Debug.Log(sceneName);

@@ -7,8 +7,24 @@ public class GameSettings : MonoBehaviour
     public bool AIGame;
     public bool AIHard;
 
+    private static GameSettings instance = null;
+    public static GameSettings Instance
+    {
+        get { return instance; }
+    }
+
     void Awake()
     {
+        if (instance != null && instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        else
+        {
+            instance = this;
+        }
+
         DontDestroyOnLoad(this.gameObject);
     }
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using gamecore = GameCore;
@@ -31,13 +32,11 @@ public class PlacementObject : MonoBehaviour
         vertical,
         incorrectlyOriented
     }
-
     
 
     // Start is called before the first frame update
     void Awake()
     {
-
 
         moveWallScript = GameObject.FindGameObjectWithTag("GameController").GetComponent<MoveWall>();
 
@@ -52,7 +51,7 @@ public class PlacementObject : MonoBehaviour
         else
         {
             direction = PlacementDirection.incorrectlyOriented;
-            Debug.LogWarning($"The placement arrow:  \"{gameObject.name}\" parented to: \"{transform.parent.name}\" is incorrectly oriented.This can cause problems with walls placement");
+            //Debug.LogWarning($"The placement arrow:  \"{gameObject.name}\" parented to: \"{transform.parent.name}\" is incorrectly oriented.This can cause problems with walls placement");
         }
 
         if(direction == PlacementDirection.horizontal && materialHorizontal == null)
@@ -85,12 +84,93 @@ public class PlacementObject : MonoBehaviour
 
         isFirstMouseOver = true;
 
-        PlaceSelectedWall();
+        gameboard.Move move = new gameboard.Move(0, 0, 0);
+
+        if (Math.Abs(neighboursCenterPoint.x - (-157.5)) < 0.1)
+        {
+            move.Column = 1;
+        }
+        else if(Math.Abs(neighboursCenterPoint.x - (-112.5)) < 0.1)
+        {
+            move.Column = 2;
+        }
+        else if (Math.Abs(neighboursCenterPoint.x - (-67.5)) < 0.1)
+        {
+            move.Column = 3;
+        }
+        else if (Math.Abs(neighboursCenterPoint.x - (-22.5)) < 0.1)
+        {
+            move.Column = 4;
+        }
+        else if (Math.Abs(neighboursCenterPoint.x - 22.5) < 0.1)
+        {
+            move.Column = 5;
+        }
+        else if (Math.Abs(neighboursCenterPoint.x - 67.5) < 0.1)
+        {
+            move.Column = 6;
+        }
+        else if (Math.Abs(neighboursCenterPoint.x - 112.5) < 0.1)
+        {
+            move.Column = 7;
+        }
+        else if (Math.Abs(neighboursCenterPoint.x - 157.5) < 0.1)
+        {
+            move.Column = 8;
+        }
+
+        if (Math.Abs(neighboursCenterPoint.z - 151.5) < 0.1)
+        {
+            move.Row = 1;
+        }
+        else if (Math.Abs(neighboursCenterPoint.z - 106.5) < 0.1)
+        {
+            move.Row = 2;
+        }
+        else if (Math.Abs(neighboursCenterPoint.z - 61.5) < 0.1)
+        {
+            move.Row = 3;
+        }
+        else if (Math.Abs(neighboursCenterPoint.z - 16.5) < 0.1)
+        {
+            move.Row = 4;
+        }
+        else if (Math.Abs(neighboursCenterPoint.z - (-28.5)) < 0.1)
+        {
+            move.Row = 5;
+        }
+        else if (Math.Abs(neighboursCenterPoint.z - (-73.5)) < 0.1)
+        {
+            move.Row = 6;
+        }
+        else if (Math.Abs(neighboursCenterPoint.z - (-118.5)) < 0.1)
+        {
+            move.Row = 7;
+        }
+        else if (Math.Abs(neighboursCenterPoint.z - (-163.5)) < 0.1)
+        {
+            move.Row = 8;
+        }
+        
+        if(direction == PlacementDirection.horizontal)
+        {
+            move.Value = 1;
+        }
+        else if(direction == PlacementDirection.vertical)
+        {
+            move.Value = -1;
+        }
+
+        Debug.Log("Placement object move: " + move.Row + " " + move.Column + " " + move.Value);
+        if (GameObject.FindGameObjectWithTag("GameController").GetComponent<PlayerController>().Core.ValidateMove(move))
+        {
+            PlaceSelectedWall();
+            GameObject.FindGameObjectWithTag("GameController").GetComponent<PlayerController>().PlaceWall(move);
+        }
 
         // Change the layer of the wall placed so that it can't be moved again.(Raycast will ignore this wall)
         moveWallScript.selectedWall.gameObject.layer = LayerMasks.instance.placedWallsLayerNumber;
-        GameObject.FindGameObjectWithTag("GameController").GetComponent<PlayerController>().ToggleActivePlayer();
-
+        //GameObject.FindGameObjectWithTag("GameController").GetComponent<PlayerController>().ToggleActivePlayer();
     }
 
 
@@ -114,13 +194,13 @@ public class PlacementObject : MonoBehaviour
 
     private void OnMouseExit()
     {
-        Debug.Log("Stop perchai on  " + transform.parent.name);
+        //Debug.Log("Stop perchai on  " + transform.parent.name);
 
         isFirstMouseOver = true;
         moveWallScript.selectedWall.GetComponent<BoxCollider>().enabled = true;
         moveWallScript.selectedWall.position    = wallOriginalPosition;
         moveWallScript.selectedWall.eulerAngles = wallOriginalRotation;
-		Debug.Log("Stop perchai on  " + moveWallScript.selectedWall.position);
+		//Debug.Log("Stop perchai on  " + moveWallScript.selectedWall.position);
     }
 
 
@@ -209,7 +289,6 @@ public class PlacementObject : MonoBehaviour
 
     private void PlaceSelectedWall()
     {
-
         Vector3 previousPosition = moveWallScript.selectedWall.position;
         moveWallScript.selectedWall.position = new Vector3(neighboursCenterPoint.x, moveWallScript.selectedWall.position.y, neighboursCenterPoint.z);
         
@@ -218,21 +297,21 @@ public class PlacementObject : MonoBehaviour
         {
             Vector3 previousAngles = moveWallScript.selectedWall.eulerAngles;
             moveWallScript.selectedWall.eulerAngles = new Vector3(previousAngles.x, 90, previousAngles.z);
-			Debug.LogWarning(moveWallScript.selectedWall.position);
+			//Debug.LogWarning(moveWallScript.selectedWall.position);
 		}
 
         else if (direction == PlacementDirection.vertical)
         {
             Vector3 previousAngles = moveWallScript.selectedWall.eulerAngles;
             moveWallScript.selectedWall.eulerAngles = new Vector3(previousAngles.x, 0, previousAngles.z);
-			Debug.LogWarning(moveWallScript.selectedWall.position);
+			//Debug.LogWarning(moveWallScript.selectedWall.position);
 		}
 
         else if (direction == PlacementDirection.incorrectlyOriented)
         {
             moveWallScript.selectedWall.position = previousPosition;
-			Debug.LogWarning(moveWallScript.selectedWall.position);
-            Debug.LogWarning($"The placement arrow:  \"{gameObject.name}\" parented to: \"{transform.parent.name}\" is incorrectly oriented.The wall \"{moveWallScript.selectedWall.name}\" won't be moved");
+			//Debug.LogWarning(moveWallScript.selectedWall.position);
+            //Debug.LogWarning($"The placement arrow:  \"{gameObject.name}\" parented to: \"{transform.parent.name}\" is incorrectly oriented.The wall \"{moveWallScript.selectedWall.name}\" won't be moved");
         }    
 
     }

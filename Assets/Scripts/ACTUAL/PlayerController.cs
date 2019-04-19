@@ -158,7 +158,7 @@ public class PlayerController : MonoBehaviour
 
                         previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
                         gameboard.Move selectedMove = new gameboard.Move((byte)(10 - hitBlockPosition.row), (byte)(hitBlockPosition.col - 64), 0);
-                        
+                        Debug.Log("Our move: " + selectedMove.Row + " " + selectedMove.Column + " " + selectedMove.Value);
                         if (Core.ValidateMove(selectedMove))
                         {
                             if (MovePlayer(hitBlockPosition.col, hitBlockPosition.row))
@@ -223,7 +223,7 @@ public class PlayerController : MonoBehaviour
                 if ((weArePlayer1 != isPlayer1Selected) && moveNow == false)
                 {
                     opponentMove = Core.GetMove();
-                    Debug.Log("Selected move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
+                    Debug.Log("Their move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
                     if (opponentMove.Value == 0)
                     {
                         opponentMove.Row = (byte)(10 - opponentMove.Row);
@@ -262,8 +262,33 @@ public class PlayerController : MonoBehaviour
         
     }
 
+    public void PlaceWall(gameboard.Move move)
+    {
+        Core.ProcessMove(move);
+        ToggleActivePlayer();
+        opponentMove = Core.GetMove();
+        Debug.Log("Place wall move: " + move.Row + " " + move.Column + " " + move.Value);
 
+        if (opponentMove.Value == 0)
+        {
+            opponentMove.Row = (byte)(10 - opponentMove.Row);
+            string stringMove = Core.ConvertMoveToString(opponentMove);
+            string upper = stringMove.ToUpper();
+            char temp = upper[0];
 
+            MovePlayer(temp, opponentMove.Row);
+        }
+        else if (opponentMove.Value == 1 || opponentMove.Value == -1)
+        {
+            Core.ProcessMove(opponentMove);
+            opponentMove.Row = (byte)(10 - opponentMove.Row);
+            string stringMove = Core.ConvertMoveToString(opponentMove);
+            string upper = stringMove.ToUpper();
+            char temp = upper[0];
+            moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row - 1, opponentMove.Value);
+            ToggleActivePlayer();
+        }
+    }
 
     public void ChangeToPlayer1(bool selected)
     {

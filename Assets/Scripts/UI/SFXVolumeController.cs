@@ -8,6 +8,12 @@ public class SFXVolumeController : MonoBehaviour
     public AudioSource audio;
     public Slider slider;
 
+    private static MusicController instance = null;
+    public static MusicController Instance
+    {
+        get { return instance; }
+    }
+
     public void Awake()
     {
         music = GameObject.FindObjectOfType<SFXController>();
