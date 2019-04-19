@@ -14,6 +14,7 @@ public class GameCore : ScriptableObject
 
     public bool AIGame;
     public bool AIHard;
+    public bool AIF;
     AIOpponent ComputerOpponent;
 
     gameBoard.Move LastMove = new gameBoard.Move(0, 0, 0);
@@ -27,9 +28,10 @@ public class GameCore : ScriptableObject
         board = gameBoard.CreateInstance<gameBoard>();
     }
 
-    public void Init(bool AI, bool AIHard)
+    public void Init(bool AI, bool AIHard, bool AIFirst)
     {
         AIGame = AI;
+        AIF = AIFirst;
         if (AIGame)
         {
             AIOpponent.Parameters prms = new AIOpponent.Parameters();
@@ -42,7 +44,7 @@ public class GameCore : ScriptableObject
             prms.DIST = 10;
 
             ComputerOpponent = AIOpponent.CreateInstance<AIOpponent>();
-            ComputerOpponent.Init(AIHard, false, prms);
+            ComputerOpponent.Init(AIHard, AIFirst, prms);
         }
     }
 
@@ -67,9 +69,27 @@ public class GameCore : ScriptableObject
         return board.ConvertStringToMove(move);
     }
 
+    public gameBoard.Move GetFirstAIMove()
+    {
+        gameBoard.Move move = new gameBoard.Move(0, 0, 0);
+
+        move = ComputerOpponent.GetMove();
+        Debug.Log("AI Move: " + move.Row + " " + move.Column + " " + move.Value);
+
+        return move;
+    }
+
+    public gameBoard.Move convertMove(gameBoard.Move move)
+    {
+        gameBoard.Move newMove = new gameBoard.Move(0, 0, 0);
+        newMove.Row = (byte)(10 - move.Row);
+        newMove.Column = (byte)(10 - move.Column);
+        newMove.Value = move.Value;
+        return newMove;
+    }
+
     public void ProcessMove(gameBoard.Move move)
     {
-        Debug.Log("Game Core received move: " + move.Row + " " + move.Column + " " + move.Value);
         LastMove = new gameBoard.Move(move);
 
         if (!move.Equals(null))
@@ -105,6 +125,7 @@ public class GameCore : ScriptableObject
         if (AIGame)
         {
             move = ComputerOpponent.GetMove(LastMove);
+            Debug.Log("AI Move: " + move.Row + " " + move.Column + " " + move.Value);
         }
         else
         {

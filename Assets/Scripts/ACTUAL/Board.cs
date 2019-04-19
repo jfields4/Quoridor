@@ -382,7 +382,7 @@ public class Board : ScriptableObject
     {
         bool valid = false;
         Move move;
-
+        
         /***************checks to make sure invalid moves don't cause out of bounds errors********************/
         if (moveSent.Row < 1 || moveSent.Column < 1 || moveSent.Row > 9 || moveSent.Column > 9)
         {
@@ -423,15 +423,20 @@ public class Board : ScriptableObject
 
             if (MoveIsJump(moveSent))
             {
+                Debug.Log("move is jump");
                 valid = true;
             }
             else if (moveSent != PlayerPositions[NotCurrent])
             {
+                Debug.Log(ConvertMoveToString(moveSent) + " " + ConvertMoveToString(PlayerPositions[Current]));
                 if (Adjacent(moveSent, PlayerPositions[Current]))
                 {
+                    Debug.Log("is adjacent");
+                    //Debug.Log("adjacent");
                     //if moving up or down
                     if (moveSent.Row != PlayerPositions[Current].Row)
                     {
+                        Debug.Log("is up/down");
                         if (GameBoard[move.Row, move.Column - 1] <= 0 &&
                             GameBoard[move.Row, move.Column] <= 0)
                         {
@@ -441,6 +446,7 @@ public class Board : ScriptableObject
                     //if moving left or right
                     else
                     {
+                        Debug.Log("left/right");
                         if (GameBoard[move.Row - 1, move.Column] >= 0 &&
                             GameBoard[move.Row, move.Column] >= 0)
                         {
@@ -586,6 +592,11 @@ public class Board : ScriptableObject
         Current = (byte)Math.Abs(Current - 1);
         NotCurrent = (byte)Math.Abs(Current - 1);
         Turns++;
+
+        foreach (Move m in PlayerPositions)
+        {
+            Debug.Log("Player positions: " + m.Row + " " + m.Column + " " + m.Value);
+        }
     }
 
     //overloaded to deal with either representation of a move
@@ -603,6 +614,11 @@ public class Board : ScriptableObject
         Current = (byte)Math.Abs(Current - 1);
         NotCurrent = (byte)Math.Abs(Current - 1);
         Turns++;
+
+        //foreach (Move m in PlayerPositions)
+        //{
+        //    Debug.Log("Player positions: " + m.Row + " " + m.Column + " " + m.Value);
+        //}
     }
 
     public bool CheckForEndGame()

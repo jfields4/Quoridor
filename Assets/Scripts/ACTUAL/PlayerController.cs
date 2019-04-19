@@ -41,7 +41,8 @@ public class PlayerController : MonoBehaviour
     private bool allowPlayerAction = true;          // Should the player be allowed to make a move now?
     private bool jumped;
     public PhotonView photonView;
-
+    private bool firstMoveMade;
+    internal Player firstPlayer;
 
     public enum Players
     { 
@@ -109,16 +110,87 @@ public class PlayerController : MonoBehaviour
         photonView = PhotonView.Get(this);
         moveWall = GameObject.Find("Controller").GetComponent<MoveWall>();
         Core = gamecore.CreateInstance<gamecore>();
-        Core.Init(GameObject.FindObjectOfType<GameSettings>().AIGame, GameObject.FindObjectOfType<GameSettings>().AIHard);
-        currentlySelectedPlayer = player1;
+        Core.Init(GameObject.FindObjectOfType<GameSettings>().AIGame, GameObject.FindObjectOfType<GameSettings>().AIHard, true);
+        
+        currentlySelectedPlayer = player2;
+        firstPlayer = currentlySelectedPlayer;
+        ChangeToPlayer2(true);
+        firstMoveMade = false;
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            currentlySelectedPlayer = player1;
+            firstPlayer = currentlySelectedPlayer;
+            ChangeToPlayer1(true);
+            firstMoveMade = true;
+        }
+        Debug.Log(firstMoveMade);
         //currentlyActivePlayer.text = "Active Player : " + $"<color=#00ff00ff>{currentlySelectedPlayer.playerType}</color>";
 		currentlyActivePlayer.text =  currentlySelectedPlayer.playerType.ToString();
-	}
+
+        //if (GameObject.FindObjectOfType<GameSettings>().AIGame && GameObject.FindObjectOfType<GameSettings>().AIFirst)
+        //{
+        //    opponentMove = Core.GetFirstAIMove();
+        //    Debug.Log("Their move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
+        //    if (opponentMove.Value == 0)
+        //    {
+        //        opponentMove.Row = (byte)(10 - opponentMove.Row);
+        //        string stringMove = Core.ConvertMoveToString(opponentMove);
+        //        string upper = stringMove.ToUpper();
+        //        char temp = upper[0];
+
+        //        MovePlayer(temp, opponentMove.Row);
+        //    }
+        //    else if (opponentMove.Value == 1 || opponentMove.Value == -1)
+        //    {
+        //        Core.ProcessMove(opponentMove);
+        //        opponentMove.Row = (byte)(10 - opponentMove.Row);
+        //        string stringMove = Core.ConvertMoveToString(opponentMove);
+        //        string upper = stringMove.ToUpper();
+        //        char temp = upper[0];
+        //        moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row - 1, opponentMove.Value);
+        //        ToggleActivePlayer();
+        //    }
+        //}
+    }
 
     // Update is called once per frame
     void Update()
     {
+        if (!firstMoveMade)
+        {
+            Debug.Log("firstMoveMade true");
+            if (GameObject.FindObjectOfType<GameSettings>().AIGame)
+            {
+                Debug.Log("AI first move");
+                opponentMove = Core.GetFirstAIMove();
+                Debug.Log("Their move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
+                if (Core.ValidateMove(opponentMove))
+                {
+                    if (opponentMove.Value == 0)
+                    {
+                        //opponentMove.Row = (byte)opponentMove.Row;
+                        string stringMove = Core.ConvertMoveToString(opponentMove);
+                        string upper = stringMove.ToUpper();
+                        char temp = upper[0];
+                        MovePlayer(temp, opponentMove.Row);
+                    }
+                    else if (opponentMove.Value == 1 || opponentMove.Value == -1)
+                    {
+                        Core.ProcessMove(opponentMove);
+                        //opponentMove.Row = (byte)(10 - opponentMove.Row);
+                        string stringMove = Core.ConvertMoveToString(opponentMove);
+                        string upper = stringMove.ToUpper();
+                        char temp = upper[0];
+                        moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row, opponentMove.Value);
+                        ToggleActivePlayer();
+                    }
+                }
+                
+            }
 
+            firstMoveMade = true;
+        }
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hitInfo;
@@ -160,13 +232,22 @@ public class PlayerController : MonoBehaviour
                     {
 
                         previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
-                        gameboard.Move selectedMove = new gameboard.Move((byte)(10 - hitBlockPosition.row), (byte)(hitBlockPosition.col - 64), 0);
+                        //gameboard.Move selectedMove = new gameboard.Move((byte)(10 - hitBlockPosition.row), (byte)(hitBlockPosition.col - 64), 0);
+                        gameboard.Move selectedMove = new gameboard.Move(hitBlockPosition.row, (byte)(hitBlockPosition.col - 64), 0);
                         Debug.Log("Our move: " + selectedMove.Row + " " + selectedMove.Column + " " + selectedMove.Value);
+
+                        //if (!GameObject.FindObjectOfType<GameSettings>().AIFirst)
+                        //{
+                        //    selectedMove.Row = (byte)(10 - selectedMove.Row);
+                        //}
+                        Debug.Log("Our move converted: " + selectedMove.Row + " " + selectedMove.Column + " " + selectedMove.Value);
+
                         if (Core.ValidateMove(selectedMove))
                         {
                             if (MovePlayer(hitBlockPosition.col, hitBlockPosition.row))
                             {
-                                photonView.RPC("NetworkingMoveRPC", Photon.Pun.RpcTarget.All, Core.ConvertMoveToString(selectedMove));
+                                if(!GameObject.FindObjectOfType<GameSettings>().AIGame)
+                                    photonView.RPC("NetworkingMoveRPC", Photon.Pun.RpcTarget.All, Core.ConvertMoveToString(selectedMove));
 
                             }
                             else
@@ -174,7 +255,8 @@ public class PlayerController : MonoBehaviour
                                 // might be able to jump
                                 if(TryJump(hitBlockPosition, selectedMove))
                                 {
-                                    photonView.RPC("NetworkingMoveRPC", Photon.Pun.RpcTarget.All, Core.ConvertMoveToString(selectedMove));
+                                    if(!GameObject.FindObjectOfType<GameSettings>().AIGame)
+                                        photonView.RPC("NetworkingMoveRPC", Photon.Pun.RpcTarget.All, Core.ConvertMoveToString(selectedMove));
                                 }
                             }
                         }
@@ -224,15 +306,21 @@ public class PlayerController : MonoBehaviour
                 actingPlayer.transform.position = playerNextDestination;
 
                 // Change player as the move has been completely made now
+                Debug.Log(GetPlayerBoardPosition(currentlySelectedPlayer));
                 ToggleActivePlayer();
 
                 if ((weArePlayer1 != isPlayer1Selected) && moveNow == false && Core.AIGame)
                 {
                     opponentMove = Core.GetMove();
-                    Debug.Log("Their move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
+                    //if (!GameObject.FindObjectOfType<GameSettings>().AIFirst)
+                    //{
+                    //    opponentMove.Row = (byte)(10 - opponentMove.Row);
+                    //}
+                    //Debug.Log("Their move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
+
                     if (opponentMove.Value == 0)
                     {
-                        opponentMove.Row = (byte)(10 - opponentMove.Row);
+                        //opponentMove.Row = (byte)(10 - opponentMove.Row);
                         string stringMove = Core.ConvertMoveToString(opponentMove);
                         string upper = stringMove.ToUpper();
                         char temp = upper[0];
@@ -242,11 +330,21 @@ public class PlayerController : MonoBehaviour
                     else if (opponentMove.Value == 1 || opponentMove.Value == -1)
                     {
                         Core.ProcessMove(opponentMove);
-                        opponentMove.Row = (byte)(10 - opponentMove.Row);
+                        //opponentMove.Row = (byte)(10 - opponentMove.Row);
                         string stringMove = Core.ConvertMoveToString(opponentMove);
                         string upper = stringMove.ToUpper();
                         char temp = upper[0];
-                        moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row - 1, opponentMove.Value);
+                        //if (!GameObject.FindObjectOfType<GameSettings>().AIFirst)
+                        //{
+                        //    Debug.Log("ROW - 1");
+                        //    moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row - 1, opponentMove.Value);
+                        //}
+                        //else
+                        //{
+                            Debug.Log("NOT ROW - 1");
+                            moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row, opponentMove.Value);
+                        //}
+
                         ToggleActivePlayer();
                     }
                 }
@@ -274,7 +372,7 @@ public class PlayerController : MonoBehaviour
         opponentMove = Core.ConvertStringToMove(netMove);
         if (opponentMove.Value == 0)
         {
-            opponentMove.Row = (byte)(10 - opponentMove.Row);
+            //opponentMove.Row = (byte)(10 - opponentMove.Row);
             string stringMove = Core.ConvertMoveToString(opponentMove);
             string upper = stringMove.ToUpper();
             char temp = upper[0];
@@ -284,11 +382,11 @@ public class PlayerController : MonoBehaviour
         else if (opponentMove.Value == 1 || opponentMove.Value == -1)
         {
             Core.ProcessMove(opponentMove);
-            opponentMove.Row = (byte)(10 - opponentMove.Row);
+            //opponentMove.Row = (byte)(10 - opponentMove.Row);
             string stringMove = Core.ConvertMoveToString(opponentMove);
             string upper = stringMove.ToUpper();
             char temp = upper[0];
-            moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row - 1, opponentMove.Value);
+            moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row, opponentMove.Value);
             ToggleActivePlayer();
         }
     }
@@ -298,7 +396,7 @@ public class PlayerController : MonoBehaviour
         Core.ProcessMove(move);
         ToggleActivePlayer();
         opponentMove = Core.GetMove();
-        Debug.Log("Place wall move: " + move.Row + " " + move.Column + " " + move.Value);
+        //Debug.Log("Place wall move: " + move.Row + " " + move.Column + " " + move.Value);
 
         if (opponentMove.Value == 0)
         {
@@ -312,11 +410,19 @@ public class PlayerController : MonoBehaviour
         else if (opponentMove.Value == 1 || opponentMove.Value == -1)
         {
             Core.ProcessMove(opponentMove);
-            opponentMove.Row = (byte)(10 - opponentMove.Row);
+            //opponentMove.Row = (byte)(10 - opponentMove.Row);
             string stringMove = Core.ConvertMoveToString(opponentMove);
             string upper = stringMove.ToUpper();
             char temp = upper[0];
-            moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row - 1, opponentMove.Value);
+            moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row, opponentMove.Value);
+            //if (!GameObject.FindObjectOfType<GameSettings>().AIFirst)
+            //{
+            //    moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row - 1, opponentMove.Value);
+            //}
+            //else
+            //{
+                moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row, opponentMove.Value);
+            //}
             ToggleActivePlayer();
         }
     }
@@ -488,7 +594,6 @@ public class PlayerController : MonoBehaviour
         RaycastHit hitInfo;
         GameObject playerObject = player.playerGameObject;
 
-
         if (Physics.Raycast(playerObject.transform.position, -playerObject.transform.up, out hitInfo, 100 , LayerMasks.instance.blockLayerOnly))
         {
 
@@ -581,7 +686,13 @@ public class PlayerController : MonoBehaviour
             // Change player as the move has been completely made now
             ToggleActivePlayer();
             opponentMove = Core.GetMove();
-            Debug.Log("Selected move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
+
+            //if (!GameObject.FindObjectOfType<GameSettings>().AIFirst && currentlySelectedPlayer == player2)
+            //{
+            //    opponentMove.Row = (byte)(10 - opponentMove.Row);
+            //}
+
+            //Debug.Log("Selected move: " + opponentMove.Row + " " + opponentMove.Column + " " + opponentMove.Value);
             if (opponentMove.Value == 0)
             {
                 opponentMove.Row = (byte)(10 - opponentMove.Row);
@@ -598,15 +709,23 @@ public class PlayerController : MonoBehaviour
                 string stringMove = Core.ConvertMoveToString(opponentMove);
                 string upper = stringMove.ToUpper();
                 char temp = upper[0];
-                moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row - 1, opponentMove.Value);
+
+                //if (!GameObject.FindObjectOfType<GameSettings>().AIFirst && currentlySelectedPlayer == player2)
+                //{
+                //    opponentMove.Row = (byte)(10 - opponentMove.Row);
+                //    moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row-1, opponentMove.Value);
+                //}
+                //else
+                //{
+                    moveWall.MoveWallWithQuoridorNotation(temp, opponentMove.Row, opponentMove.Value);
+                //}
+
                 ToggleActivePlayer();
             }
 
             
         }
     }
-
-
 
     public bool PositionLiesInBoard(int index)
     {
@@ -695,13 +814,21 @@ public class PlayerController : MonoBehaviour
 
     public bool MovePlayer(char col, int row)
     {
-        Debug.Log("Recieved " + row + " " + col);
-        gameboard.Move selectedMove = new gameboard.Move((byte)(10 - row), (byte)(col - 64), 0);
+        Debug.Log("MovePlayer Recieved " + row + " " + col);
+
+        gameboard.Move selectedMove = new gameboard.Move((byte)row, (byte)(col - 64), 0);
+
+        //if (!GameObject.FindObjectOfType<GameSettings>().AIFirst && currentlySelectedPlayer == player1)
+        //{
+        //    selectedMove = new gameboard.Move((byte)(10 - row), (byte)(col - 64), 0);
+        //}
         //Debug.Log(selectedMove.Row + " " + selectedMove.Column);
         Core.ProcessMove(selectedMove);
         col = (col + "").ToUpper()[0];
+        
 
         MoveTuple playerPos       = GetPlayerBoardPosition(currentlySelectedPlayer);
+        //Debug.Log(GetPlayerBoardPosition(currentlySelectedPlayer));
         MoveTuple moveTo          = IndexToMoveTuple(GetIndexFromRowCol(col , row));
         BoardSetup.Block blockHit = BoardSetup.instance.gridArray[moveTo.indexInGrid - 1];
 
@@ -710,33 +837,24 @@ public class PlayerController : MonoBehaviour
         List<MoveTuple> allowablePositions = GetAllowablePositions(playerPos);
 
         previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
-
-
-        if (allowablePositions.Contains(moveTo))
-        {
+        
+        
             
-            Transform selectedPlayer = currentlySelectedPlayer.playerGameObject.transform;
+        Transform selectedPlayer = currentlySelectedPlayer.playerGameObject.transform;
 
-            Vector3 rayOrigin = new Vector3(selectedPlayer.position.x, selectedPlayer.position.y - (selectedPlayer.localScale.y / 2), selectedPlayer.position.z);
+        Vector3 rayOrigin = new Vector3(selectedPlayer.position.x, selectedPlayer.position.y - (selectedPlayer.localScale.y / 2), selectedPlayer.position.z);
 
-            // If there is no wall infront of the player then move
-            if (!Physics.Raycast(rayOrigin, blockHit.blockTransform.position - rayOrigin, Mathf.Infinity, LayerMasks.instance.placedWallsOnly))
-            {
-                previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
-                //currentlySelectedPlayer.transform.position = new Vector3(blockHit.position.x , currentlySelectedPlayer.transform.position.y, blockHit.position.z);
-                playerNextDestination = new Vector3(blockHit.blockTransform.position.x, currentlySelectedPlayer.playerGameObject.transform.position.y, blockHit.blockTransform.position.z);
-                moveNow = true;
-                lastMoveBy = currentlySelectedPlayer.playerType;
-                return true;
-            }
-
-            else
-            {
-                return false;
-            }
-
+        // If there is no wall infront of the player then move
+        if (!Physics.Raycast(rayOrigin, blockHit.blockTransform.position - rayOrigin, Mathf.Infinity, LayerMasks.instance.placedWallsOnly))
+        {
+            previousPlayerPos = currentlySelectedPlayer.playerGameObject.transform.position;
+            //currentlySelectedPlayer.transform.position = new Vector3(blockHit.position.x , currentlySelectedPlayer.transform.position.y, blockHit.position.z);
+            playerNextDestination = new Vector3(blockHit.blockTransform.position.x, currentlySelectedPlayer.playerGameObject.transform.position.y, blockHit.blockTransform.position.z);
+            moveNow = true;
+            lastMoveBy = currentlySelectedPlayer.playerType;
+                
+            return true;
         }
-
         else
         {
             return false;

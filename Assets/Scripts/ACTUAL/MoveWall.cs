@@ -237,7 +237,7 @@ public class MoveWall : MonoBehaviour
 
     public void MoveWallWithQuoridorNotation(char col, int row, int angle)
     {
-        Debug.Log(" MOVE WALL qnotation method");
+        Debug.Log(" MOVE WALL qnotation method: " + row + col + angle);
         for (j = Counter2; j < TopWall.Length; j++)
         {
             if (j == Counter2)
