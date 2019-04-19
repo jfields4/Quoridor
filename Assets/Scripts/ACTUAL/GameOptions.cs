@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class GameOptions : MonoBehaviour
 {
-    public Button bt_character_1, bt_character_2, bt_character_3, bt_character_4, bt_dificult_1, bt_dificult_2;
+    public Button bt_character_1, bt_character_2, bt_character_3, bt_character_4, bt_dificult_1, bt_dificult_2, bt_first_1, bt_first_2;
     private ColorBlock theColor, defaultColorGreen, defaultColor, theColorDificult1, theColorDificult2, defaultColorRed;
     private Color orange = new Color(1f, 0.5829f, 0f);
     private Color green = new Color(0f, 0.8867924f, 0.09454501f);
@@ -21,6 +21,9 @@ public class GameOptions : MonoBehaviour
         bt_character_4.onClick.AddListener(SelectCharacter4);
         bt_dificult_1.onClick.AddListener(SelectDifficulty1);
         bt_dificult_2.onClick.AddListener(SelectDifficulty2);
+        bt_first_1.onClick.AddListener(SelectFirst1);
+        bt_first_2.onClick.AddListener(SelectFirst2);
+
 
         theColor = bt_character_1.colors;
         theColorDificult1 = bt_dificult_1.colors;
@@ -33,11 +36,18 @@ public class GameOptions : MonoBehaviour
         options = GameObject.FindObjectOfType<GameSettings>();
     }
 
-    public void ResetCharacterColors() {
+    public void ResetCharacterColors()
+    {
         bt_character_1.colors = defaultColor;
         bt_character_2.colors = defaultColor;
         bt_character_3.colors = defaultColor;
         bt_character_4.colors = defaultColor;
+    }
+
+    public void ResetFirstColors()
+    {
+        bt_first_1.colors = defaultColorGreen;
+        bt_first_2.colors = defaultColorRed;
     }
 
     public void ResetDifficultyColors()
@@ -46,7 +56,8 @@ public class GameOptions : MonoBehaviour
         bt_dificult_2.colors = defaultColorRed;
     }
 
-    public void SelectCharacter1() {
+    public void SelectCharacter1()
+    {
         ResetCharacterColors();
         theColor.normalColor = orange;
         bt_character_1.colors = theColor;
@@ -97,4 +108,17 @@ public class GameOptions : MonoBehaviour
         Debug.Log("AI Hard option: " + options.AIHard);
     }
 
+    public void SelectFirst1()
+    {
+        ResetFirstColors();
+        theColor.normalColor = orange;
+        bt_first_1.colors = theColor;
+    }
+
+    public void SelectFirst2()
+    {
+        ResetFirstColors();
+        theColor.normalColor = orange;
+        bt_first_2.colors = theColor;
+    }
 }
